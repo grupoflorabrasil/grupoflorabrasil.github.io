@@ -356,8 +356,10 @@
 </div>
 
 <script>
-// ⚠️ COLE AQUI a URL do seu App da Web (Apps Script), terminando em /exec
-const API_URL = 'https://script.google.com/macros/s/AKfycbwm6bkQARgEIzj_rKPdHThVx8aW-wuzwElmLJJTyRapl0rA-6GI1dSzSXD2FZ30xinRXA/exec';
+// Backend próprio do Painel ESG, com planilha e implantação
+// independentes do painel de Marketing.
+const API_URL = 'https://script.google.com/macros/s/AKfycby-QG1dE50dn6VXjOa4QY7mtph70xuILS3UIN2GnQbHjK00FxYz8sDbrEilbvWRG4xJ/exec';
+const SHEET_NAME = 'ESG';
 
 const COLUNAS = [
   {id:'fila', nome:'Fila'},
@@ -375,6 +377,8 @@ let currentFilter = 'todos';
 let currentView = 'board';
 let calRefDate = new Date();
 calRefDate.setDate(1);
+
+function uid(){return 'esg' + Date.now().toString(36) + Math.random().toString(36).slice(2,7);}
 
 function apiConfigured(){
   return API_URL && !API_URL.includes('COLE_AQUI');
@@ -400,32 +404,31 @@ async function loadData(){
   const board = document.getElementById('board');
   board.innerHTML = '<div class="loading-state">Carregando demandas da planilha...</div>';
   try{
-    const res = await fetch(`${API_URL}?action=list`);
+    const res = await fetch(`${API_URL}?sheet=${encodeURIComponent(SHEET_NAME)}`);
     const data = await res.json();
-    demandas = Array.isArray(data) ? data : [];
+    if(data && data.error) throw new Error(data.error);
+    demandas = (Array.isArray(data) ? data : []).map(d => ({
+      ...d,
+      apoio: d.apoio === true || d.apoio === 'true' || d.apoio === 'TRUE'
+    }));
   }catch(e){
     console.error('Erro ao carregar dados', e);
-    showBanner('banner-error', 'Não foi possível carregar os dados da planilha. Confira a URL e se a implantação está como "Qualquer pessoa" pode acessar.');
+    showBanner('banner-error', 'Não foi possível carregar os dados da planilha. Confira se a aba "ESG" existe na planilha do Marketing.');
     demandas = [];
   }
 }
 
-async function apiSave(demanda){
+async function salvarTudoNaPlanilha(){
   const res = await fetch(API_URL, {
-    method:'POST',
-    headers:{'Content-Type':'text/plain;charset=utf-8'},
-    body: JSON.stringify({action:'save', demanda})
+    method: 'POST',
+    headers: {'Content-Type': 'text/plain;charset=utf-8'},
+    body: JSON.stringify({sheet: SHEET_NAME, items: demandas})
   });
-  return await res.json();
+  const data = await res.json();
+  if(!data.ok) throw new Error(data.error || 'Falha ao salvar');
+  return data;
 }
 
-async function apiDelete(id){
-  await fetch(API_URL, {
-    method:'POST',
-    headers:{'Content-Type':'text/plain;charset=utf-8'},
-    body: JSON.stringify({action:'delete', id})
-  });
-}
 
 /* ---------------- Rendering: Board ---------------- */
 function formatDate(iso){
@@ -633,14 +636,13 @@ function closeModal(){
 }
 
 async function saveFromModal(){
-  if(!apiConfigured()){ showBanner('banner-config'); return; }
   const titulo = document.getElementById('f-titulo').value.trim();
   if(!titulo){ document.getElementById('f-titulo').focus(); return; }
   const pilar = document.querySelector('.pilar-opt.selected')?.dataset.pilar || 'ambiental';
   const apoio = document.querySelector('#f-apoio-toggle .radio-opt.selected')?.dataset.val === 'sim';
 
   const data = {
-    id: editingId || undefined,
+    id: editingId || uid(),
     titulo,
     pilar,
     desc: document.getElementById('f-desc').value.trim(),
@@ -654,14 +656,13 @@ async function saveFromModal(){
   const btn = document.getElementById('btn-salvar');
   btn.disabled = true; btn.textContent = 'Salvando...';
   try{
-    const result = await apiSave(data);
-    const finalId = result && result.id ? result.id : editingId;
     if(editingId){
       const idx = demandas.findIndex(d=>d.id===editingId);
-      if(idx>-1) demandas[idx] = {...demandas[idx], ...data, id:finalId};
+      if(idx>-1) demandas[idx] = data;
     } else {
-      demandas.push({...data, id:finalId});
+      demandas.push(data);
     }
+    await salvarTudoNaPlanilha();
     hideBanner('banner-error');
     closeModal();
     renderAll();
@@ -677,8 +678,8 @@ async function deleteCurrent(){
   const btn = document.getElementById('btn-excluir');
   btn.disabled = true; btn.textContent = 'Excluindo...';
   try{
-    await apiDelete(editingId);
     demandas = demandas.filter(d=>d.id!==editingId);
+    await salvarTudoNaPlanilha();
     hideBanner('banner-error');
     closeModal();
     renderAll();
