@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<script>
+  // Trava de acesso: se a pessoa não passou pela tela de senha, volta para a home
+  if (sessionStorage.getItem('acesso_esg') !== 'ok') {
+    window.location.href = '/index.html';
+  }
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel ESG · MV Comunicações</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#101d19;
+    --bg-panel:#16261f;
+    --bg-card:#1c332a;
+    --bg-card-hover:#213a2f;
+    --border:#2b4438;
+    --border-soft:#233a30;
+    --text:#eae6da;
+    --text-dim:#9fb5a8;
+    --text-faint:#6d8579;
+    --ambiental:#5cb86b;
+    --ambiental-bg:rgba(92,184,107,0.14);
+    --social:#4fa3d1;
+    --social-bg:rgba(79,163,209,0.14);
+    --governanca:#d1a935;
+    --governanca-bg:rgba(209,169,53,0.14);
+    --danger:#d1705f;
+    --danger-bg:rgba(209,112,95,0.14);
+    --radius:12px;
+    --radius-sm:8px;
+    --shadow:0 8px 24px rgba(0,0,0,0.35);
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:'Inter',sans-serif;min-height:100vh;}
+  h1,h2,h3,.brand,.col-title,.btn,.tab{font-family:'Space Grotesk',sans-serif;}
+
+  /* ---------- Header ---------- */
+  header{
+    padding:22px 28px 16px;
+    border-bottom:1px solid var(--border-soft);
+    background:linear-gradient(180deg, var(--bg-panel) 0%, var(--bg) 100%);
+  }
+  .header-top{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;}
+  .brand{display:flex;align-items:center;gap:10px;}
+  .brand-mark{
+    width:34px;height:34px;border-radius:9px;
+    background:conic-gradient(from 210deg, var(--ambiental), var(--social), var(--governanca), var(--ambiental));
+    flex-shrink:0;
+  }
+  .brand h1{margin:0;font-size:20px;font-weight:700;letter-spacing:-0.02em;}
+  .brand span{display:block;font-size:12px;color:var(--text-faint);font-family:'Inter',sans-serif;font-weight:500;}
+  .header-actions{display:flex;gap:10px;align-items:center;}
+
+  .btn{
+    border:none;border-radius:var(--radius-sm);padding:10px 16px;
+    font-size:13px;font-weight:600;cursor:pointer;
+    display:inline-flex;align-items:center;gap:6px;
+    transition:transform .12s ease, background .15s ease;
+  }
+  .btn:active{transform:scale(0.97);}
+  .btn-primary{background:var(--ambiental);color:#0c1a12;}
+  .btn-primary:hover{background:#6cc77b;}
+  .btn-ghost{background:var(--bg-card);color:var(--text);border:1px solid var(--border);}
+  .btn-ghost:hover{background:var(--bg-card-hover);}
+
+  .tabs{display:flex;gap:6px;margin-top:18px;}
+  .tab{
+    background:transparent;border:1px solid transparent;color:var(--text-dim);
+    padding:8px 14px;border-radius:var(--radius-sm);font-size:13px;font-weight:600;
+    cursor:pointer;
+  }
+  .tab.active{background:var(--bg-card);color:var(--text);border-color:var(--border);}
+
+  /* ---------- Legend / filters ---------- */
+  .legend{display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;}
+  .chip{
+    display:inline-flex;align-items:center;gap:7px;
+    padding:7px 12px;border-radius:999px;border:1px solid var(--border);
+    background:var(--bg-card);font-size:12px;font-weight:600;color:var(--text-dim);
+    cursor:pointer;user-select:none;transition:opacity .15s ease, border-color .15s ease;
+  }
+  .chip .dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
+  .chip.dim{opacity:0.4;}
+  .chip[data-pilar="ambiental"] .dot{background:var(--ambiental);}
+  .chip[data-pilar="social"] .dot{background:var(--social);}
+  .chip[data-pilar="governanca"] .dot{background:var(--governanca);}
+  .chip[data-pilar="todos"] .dot{background:linear-gradient(90deg,var(--ambiental),var(--social),var(--governanca));}
+  .chip-count{color:var(--text-faint);font-weight:500;}
+
+  main{padding:22px 28px 60px;max-width:1400px;margin:0 auto;}
+
+  /* ---------- Board ---------- */
+  .board{display:flex;gap:16px;overflow-x:auto;padding-bottom:10px;}
+  .column{
+    background:var(--bg-panel);border:1px solid var(--border-soft);
+    border-radius:var(--radius);min-width:290px;max-width:290px;
+    display:flex;flex-direction:column;max-height:calc(100vh - 260px);
+  }
+  .column-header{
+    padding:14px 14px 10px;display:flex;align-items:center;justify-content:space-between;
+    border-bottom:1px solid var(--border-soft);
+  }
+  .col-title{font-size:13px;font-weight:600;letter-spacing:0.02em;text-transform:uppercase;color:var(--text-dim);}
+  .col-count{
+    background:var(--bg-card);color:var(--text-faint);font-size:11px;font-weight:700;
+    padding:2px 8px;border-radius:999px;
+  }
+  .column-body{padding:10px;overflow-y:auto;flex:1;display:flex;flex-direction:column;gap:10px;}
+  .column.dragover{background:var(--bg-card-hover);}
+  .column-add{
+    margin:0 10px 10px;padding:9px;border:1px dashed var(--border);border-radius:var(--radius-sm);
+    background:transparent;color:var(--text-faint);font-size:12px;font-weight:600;cursor:pointer;text-align:left;
+  }
+  .column-add:hover{color:var(--text-dim);border-color:var(--text-faint);}
+
+  .card{
+    background:var(--bg-card);border:1px solid var(--border-soft);border-left:3px solid var(--ambiental);
+    border-radius:var(--radius-sm);padding:11px 12px;cursor:grab;
+    box-shadow:0 1px 3px rgba(0,0,0,0.2);
+    transition:background .12s ease, border-color .12s ease;
+  }
+  .card:hover{background:var(--bg-card-hover);}
+  .card.dragging{opacity:0.4;}
+  .card[data-pilar="ambiental"]{border-left-color:var(--ambiental);}
+  .card[data-pilar="social"]{border-left-color:var(--social);}
+  .card[data-pilar="governanca"]{border-left-color:var(--governanca);}
+  .card-title{font-size:13.5px;font-weight:600;margin:0 0 6px;line-height:1.35;}
+  .card-desc{font-size:12px;color:var(--text-dim);margin:0 0 8px;line-height:1.4;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+  .card-meta{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;}
+  .pilar-tag{font-size:10px;font-weight:700;padding:3px 8px;border-radius:999px;text-transform:uppercase;letter-spacing:0.03em;}
+  .pilar-tag[data-pilar="ambiental"]{background:var(--ambiental-bg);color:var(--ambiental);}
+  .pilar-tag[data-pilar="social"]{background:var(--social-bg);color:var(--social);}
+  .pilar-tag[data-pilar="governanca"]{background:var(--governanca-bg);color:var(--governanca);}
+  .card-due{font-size:11px;font-weight:600;color:var(--text-faint);}
+  .card-due.overdue{color:var(--danger);}
+  .card-due.today{color:var(--governanca);}
+  .card-responsavel{font-size:11px;color:var(--text-faint);margin-top:7px;}
+  .card-apoio{
+    margin-top:8px;font-size:11px;font-weight:600;color:var(--social);
+    background:var(--social-bg);padding:5px 8px;border-radius:6px;
+  }
+  .empty-col{padding:20px 8px;text-align:center;color:var(--text-faint);font-size:12px;}
+
+  /* ---------- Calendar ---------- */
+  .calendar-wrap{background:var(--bg-panel);border:1px solid var(--border-soft);border-radius:var(--radius);padding:18px;}
+  .cal-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
+  .cal-nav-controls{display:flex;align-items:center;gap:10px;}
+  .cal-nav button{
+    background:var(--bg-card);border:1px solid var(--border);color:var(--text);
+    width:32px;height:32px;border-radius:8px;cursor:pointer;font-size:14px;
+  }
+  .cal-nav button:hover{background:var(--bg-card-hover);}
+  .cal-month-label{font-size:16px;font-weight:700;min-width:170px;text-align:center;font-family:'Space Grotesk',sans-serif;}
+  .cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;}
+  .cal-dow{font-size:11px;font-weight:700;color:var(--text-faint);text-transform:uppercase;text-align:center;padding-bottom:6px;}
+  .cal-day{
+    background:var(--bg-card);border:1px solid var(--border-soft);border-radius:8px;
+    min-height:92px;padding:6px;display:flex;flex-direction:column;gap:4px;
+  }
+  .cal-day.other-month{opacity:0.35;}
+  .cal-day.today{border-color:var(--ambiental);}
+  .cal-daynum{font-size:11px;font-weight:700;color:var(--text-faint);}
+  .cal-event{
+    font-size:10.5px;font-weight:600;padding:3px 6px;border-radius:5px;cursor:pointer;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  }
+  .cal-event[data-pilar="ambiental"]{background:var(--ambiental-bg);color:var(--ambiental);}
+  .cal-event[data-pilar="social"]{background:var(--social-bg);color:var(--social);}
+  .cal-event[data-pilar="governanca"]{background:var(--governanca-bg);color:var(--governanca);}
+  .cal-more{font-size:10px;color:var(--text-faint);padding-left:6px;}
+
+  /* ---------- Modal ---------- */
+  .overlay{
+    position:fixed;inset:0;background:rgba(6,12,10,0.6);backdrop-filter:blur(2px);
+    display:none;align-items:center;justify-content:center;padding:20px;z-index:50;
+  }
+  .overlay.show{display:flex;}
+  .modal{
+    background:var(--bg-panel);border:1px solid var(--border);border-radius:var(--radius);
+    width:100%;max-width:480px;max-height:88vh;overflow-y:auto;box-shadow:var(--shadow);
+  }
+  .modal-header{padding:18px 20px;border-bottom:1px solid var(--border-soft);display:flex;justify-content:space-between;align-items:center;}
+  .modal-header h2{margin:0;font-size:16px;}
+  .modal-close{background:none;border:none;color:var(--text-faint);font-size:20px;cursor:pointer;line-height:1;}
+  .modal-body{padding:18px 20px;display:flex;flex-direction:column;gap:14px;}
+  .field label{display:block;font-size:12px;font-weight:600;color:var(--text-dim);margin-bottom:6px;}
+  .field input[type=text], .field input[type=date], .field textarea, .field select{
+    width:100%;background:var(--bg-card);border:1px solid var(--border);color:var(--text);
+    border-radius:var(--radius-sm);padding:10px 11px;font-size:13px;font-family:'Inter',sans-serif;
+  }
+  .field textarea{resize:vertical;min-height:70px;}
+  .field-row{display:flex;gap:12px;}
+  .field-row .field{flex:1;}
+  .radio-group{display:flex;gap:8px;}
+  .radio-opt{
+    flex:1;text-align:center;padding:9px;border-radius:var(--radius-sm);border:1px solid var(--border);
+    background:var(--bg-card);font-size:12px;font-weight:600;cursor:pointer;color:var(--text-dim);
+  }
+  .radio-opt.selected{background:var(--ambiental-bg);border-color:var(--ambiental);color:var(--ambiental);}
+  .pilar-select{display:flex;gap:8px;}
+  .pilar-opt{
+    flex:1;text-align:center;padding:9px 6px;border-radius:var(--radius-sm);border:1px solid var(--border);
+    background:var(--bg-card);font-size:11.5px;font-weight:700;cursor:pointer;color:var(--text-dim);text-transform:uppercase;
+  }
+  .pilar-opt[data-pilar="ambiental"].selected{background:var(--ambiental-bg);border-color:var(--ambiental);color:var(--ambiental);}
+  .pilar-opt[data-pilar="social"].selected{background:var(--social-bg);border-color:var(--social);color:var(--social);}
+  .pilar-opt[data-pilar="governanca"].selected{background:var(--governanca-bg);border-color:var(--governanca);color:var(--governanca);}
+  .modal-footer{padding:16px 20px;border-top:1px solid var(--border-soft);display:flex;justify-content:space-between;gap:10px;}
+  .btn-danger{background:var(--danger-bg);color:var(--danger);}
+  .btn-danger:hover{background:rgba(209,112,95,0.24);}
+
+  .banner{
+    margin-top:14px;padding:10px 14px;border-radius:var(--radius-sm);font-size:12.5px;font-weight:600;
+    display:none;align-items:center;gap:8px;
+  }
+  .banner.show{display:flex;}
+  .banner-warn{background:var(--governanca-bg);color:var(--governanca);border:1px solid rgba(209,169,53,0.35);}
+  .banner-error{background:var(--danger-bg);color:var(--danger);border:1px solid rgba(209,112,95,0.35);}
+  .loading-state{padding:60px 20px;text-align:center;color:var(--text-faint);font-size:13px;}
+  .btn-refresh{background:var(--bg-card);color:var(--text-dim);border:1px solid var(--border);}
+  .btn-refresh:hover{background:var(--bg-card-hover);color:var(--text);}
+  .btn[disabled]{opacity:0.6;cursor:default;}
+
+  @media (max-width:640px){
+    header{padding:18px 16px 14px;}
+    main{padding:16px 16px 60px;}
+    .board{gap:12px;}
+    .column{min-width:78vw;max-width:78vw;max-height:none;}
+    .field-row{flex-direction:column;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <div class="brand">
+      <div class="brand-mark"></div>
+      <div>
+        <h1>Painel ESG</h1>
+        <span>MV Comunicações — demandas Ambiental · Social · Governança</span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-refresh" id="btn-atualizar" title="Buscar dados atualizados da planilha">↻ Atualizar</button>
+      <button class="btn btn-primary" id="btn-nova">+ Nova demanda</button>
+    </div>
+  </div>
+
+  <div class="banner banner-warn" id="banner-config">
+    Configure a URL da sua planilha: abra o arquivo, procure <strong>API_URL</strong> no código e cole o link do seu App da Web do Google Apps Script.
+  </div>
+  <div class="banner banner-error" id="banner-error"></div>
+
+  <div class="tabs">
+    <button class="tab active" data-view="board">Quadro</button>
+    <button class="tab" data-view="calendar">Calendário</button>
+  </div>
+
+  <div class="legend" id="legend">
+    <div class="chip" data-pilar="todos"><span class="dot"></span>Todos <span class="chip-count" id="count-todos"></span></div>
+    <div class="chip" data-pilar="ambiental"><span class="dot"></span>Ambiental <span class="chip-count" id="count-ambiental"></span></div>
+    <div class="chip" data-pilar="social"><span class="dot"></span>Social <span class="chip-count" id="count-social"></span></div>
+    <div class="chip" data-pilar="governanca"><span class="dot"></span>Governança <span class="chip-count" id="count-governanca"></span></div>
+  </div>
+</header>
+
+<main>
+  <section id="view-board">
+    <div class="board" id="board"></div>
+  </section>
+
+  <section id="view-calendar" style="display:none;">
+    <div class="calendar-wrap">
+      <div class="cal-nav">
+        <div class="cal-month-label" id="cal-month-label"></div>
+        <div class="cal-nav-controls">
+          <button id="cal-prev">‹</button>
+          <button id="cal-today" style="width:auto;padding:0 12px;font-size:11px;">Hoje</button>
+          <button id="cal-next">›</button>
+        </div>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+    </div>
+  </section>
+</main>
+
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modal-title">Nova demanda</h2>
+      <button class="modal-close" id="modal-close">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="field">
+        <label>Título</label>
+        <input type="text" id="f-titulo" placeholder="Ex: Relatório de emissões — 3º trimestre">
+      </div>
+      <div class="field">
+        <label>Pilar</label>
+        <div class="pilar-select" id="f-pilar">
+          <div class="pilar-opt" data-pilar="ambiental">Ambiental</div>
+          <div class="pilar-opt" data-pilar="social">Social</div>
+          <div class="pilar-opt" data-pilar="governanca">Governança</div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Descrição</label>
+        <textarea id="f-desc" placeholder="Detalhes da demanda..."></textarea>
+      </div>
+      <div class="field-row">
+        <div class="field">
+          <label>Responsável</label>
+          <input type="text" id="f-responsavel" placeholder="Nome">
+        </div>
+        <div class="field">
+          <label>Prazo</label>
+          <input type="date" id="f-prazo">
+        </div>
+      </div>
+      <div class="field">
+        <label>Status</label>
+        <select id="f-status">
+          <option value="fila">Fila</option>
+          <option value="andamento">Em andamento</option>
+          <option value="revisao">Revisão</option>
+          <option value="concluido">Concluído</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Precisa de apoio de outra pessoa?</label>
+        <div class="radio-group" id="f-apoio-toggle">
+          <div class="radio-opt" data-val="nao">Não</div>
+          <div class="radio-opt" data-val="sim">Sim</div>
+        </div>
+      </div>
+      <div class="field" id="f-apoio-wrap" style="display:none;">
+        <label>Falar com</label>
+        <input type="text" id="f-apoio-quem" placeholder="Ex: João - Design">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-danger" id="btn-excluir" style="display:none;">Excluir</button>
+      <div style="flex:1;"></div>
+      <button class="btn btn-ghost" id="btn-cancelar">Cancelar</button>
+      <button class="btn btn-primary" id="btn-salvar">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ⚠️ COLE AQUI a URL do seu App da Web (Apps Script), terminando em /exec
+const API_URL = 'https://script.google.com/macros/s/AKfycbyQndLKZCBTpla4Jb2EPnZWcYBVWxdFwKgs8cZUiQYSmDhZQgSpswuAWv1_GrU0Y2Ue/exec';
+
+const COLUNAS = [
+  {id:'fila', nome:'Fila'},
+  {id:'andamento', nome:'Em andamento'},
+  {id:'revisao', nome:'Revisão'},
+  {id:'concluido', nome:'Concluído'}
+];
+const PILARES = {
+  ambiental:'Ambiental', social:'Social', governanca:'Governança'
+};
+
+let demandas = [];
+let editingId = null;
+let currentFilter = 'todos';
+let currentView = 'board';
+let calRefDate = new Date();
+calRefDate.setDate(1);
+
+function apiConfigured(){
+  return API_URL && !API_URL.includes('COLE_AQUI');
+}
+
+function showBanner(id, msg){
+  const el = document.getElementById(id);
+  if(msg) el.textContent = msg;
+  el.classList.add('show');
+}
+function hideBanner(id){
+  document.getElementById(id).classList.remove('show');
+}
+
+async function loadData(){
+  if(!apiConfigured()){
+    showBanner('banner-config');
+    demandas = [];
+    return;
+  }
+  hideBanner('banner-config');
+  hideBanner('banner-error');
+  const board = document.getElementById('board');
+  board.innerHTML = '<div class="loading-state">Carregando demandas da planilha...</div>';
+  try{
+    const res = await fetch(`${API_URL}?action=list`);
+    const data = await res.json();
+    demandas = Array.isArray(data) ? data : [];
+  }catch(e){
+    console.error('Erro ao carregar dados', e);
+    showBanner('banner-error', 'Não foi possível carregar os dados da planilha. Confira a URL e se a implantação está como "Qualquer pessoa" pode acessar.');
+    demandas = [];
+  }
+}
+
+async function apiSave(demanda){
+  const res = await fetch(API_URL, {
+    method:'POST',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body: JSON.stringify({action:'save', demanda})
+  });
+  return await res.json();
+}
+
+async function apiDelete(id){
+  await fetch(API_URL, {
+    method:'POST',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body: JSON.stringify({action:'delete', id})
+  });
+}
+
+/* ---------------- Rendering: Board ---------------- */
+function formatDate(iso){
+  if(!iso) return '';
+  const [y,m,d] = iso.split('-');
+  return `${d}/${m}/${y}`;
+}
+function dueStatus(iso){
+  if(!iso) return '';
+  const today = new Date(); today.setHours(0,0,0,0);
+  const due = new Date(iso+'T00:00:00');
+  const diff = Math.round((due-today)/86400000);
+  if(diff < 0) return 'overdue';
+  if(diff === 0) return 'today';
+  return '';
+}
+
+function filteredDemandas(){
+  if(currentFilter === 'todos') return demandas;
+  return demandas.filter(d=>d.pilar === currentFilter);
+}
+
+function renderCounts(){
+  document.getElementById('count-todos').textContent = demandas.length;
+  document.getElementById('count-ambiental').textContent = demandas.filter(d=>d.pilar==='ambiental').length;
+  document.getElementById('count-social').textContent = demandas.filter(d=>d.pilar==='social').length;
+  document.getElementById('count-governanca').textContent = demandas.filter(d=>d.pilar==='governanca').length;
+
+  document.querySelectorAll('.chip').forEach(c=>{
+    c.classList.toggle('dim', currentFilter !== 'todos' && c.dataset.pilar !== currentFilter);
+  });
+}
+
+function cardHTML(d){
+  const ds = dueStatus(d.prazo);
+  return `
+    <div class="card" draggable="true" data-id="${d.id}" data-pilar="${d.pilar}">
+      <p class="card-title">${escapeHTML(d.titulo)}</p>
+      ${d.desc ? `<p class="card-desc">${escapeHTML(d.desc)}</p>` : ''}
+      <div class="card-meta">
+        <span class="pilar-tag" data-pilar="${d.pilar}">${PILARES[d.pilar]}</span>
+        ${d.prazo ? `<span class="card-due ${ds}">${ds==='overdue'?'Atrasado · ':''}${formatDate(d.prazo)}</span>` : ''}
+      </div>
+      ${d.responsavel ? `<div class="card-responsavel">${escapeHTML(d.responsavel)}</div>` : ''}
+      ${d.apoio ? `<div class="card-apoio">Falar com: ${escapeHTML(d.apoioQuem||'-')}</div>` : ''}
+    </div>`;
+}
+
+function escapeHTML(s){
+  const div = document.createElement('div');
+  div.textContent = s || '';
+  return div.innerHTML;
+}
+
+function renderBoard(){
+  const board = document.getElementById('board');
+  const list = filteredDemandas();
+  board.innerHTML = COLUNAS.map(col=>{
+    const items = list.filter(d=>d.status === col.id);
+    return `
+      <div class="column" data-status="${col.id}">
+        <div class="column-header">
+          <span class="col-title">${col.nome}</span>
+          <span class="col-count">${items.length}</span>
+        </div>
+        <div class="column-body" data-status="${col.id}">
+          ${items.length ? items.map(cardHTML).join('') : `<div class="empty-col">Sem demandas</div>`}
+        </div>
+        <button class="column-add" data-status="${col.id}">+ Adicionar demanda</button>
+      </div>`;
+  }).join('');
+
+  board.querySelectorAll('.card').forEach(card=>{
+    card.addEventListener('click', ()=> openModal(card.dataset.id));
+    card.addEventListener('dragstart', e=>{
+      card.classList.add('dragging');
+      e.dataTransfer.setData('text/plain', card.dataset.id);
+    });
+    card.addEventListener('dragend', ()=> card.classList.remove('dragging'));
+  });
+
+  board.querySelectorAll('.column-add').forEach(btn=>{
+    btn.addEventListener('click', ()=> openModal(null, btn.dataset.status));
+  });
+
+  board.querySelectorAll('.column-body').forEach(colBody=>{
+    colBody.addEventListener('dragover', e=>{
+      e.preventDefault();
+      colBody.closest('.column').classList.add('dragover');
+    });
+    colBody.addEventListener('dragleave', ()=>{
+      colBody.closest('.column').classList.remove('dragover');
+    });
+    colBody.addEventListener('drop', async e=>{
+      e.preventDefault();
+      colBody.closest('.column').classList.remove('dragover');
+      const id = e.dataTransfer.getData('text/plain');
+      const d = demandas.find(x=>x.id===id);
+      if(!d) return;
+      const prevStatus = d.status;
+      d.status = colBody.dataset.status;
+      renderAll();
+      try{
+        await apiSave(d);
+        hideBanner('banner-error');
+      }catch(err){
+        console.error('Erro ao mover demanda', err);
+        d.status = prevStatus;
+        renderAll();
+        showBanner('banner-error', 'Não foi possível salvar a mudança na planilha. Tente novamente.');
+      }
+    });
+  });
+}
+
+/* ---------------- Rendering: Calendar ---------------- */
+function renderCalendar(){
+  const label = document.getElementById('cal-month-label');
+  const grid = document.getElementById('cal-grid');
+  const year = calRefDate.getFullYear();
+  const month = calRefDate.getMonth();
+  const monthNames = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  label.textContent = `${monthNames[month]} ${year}`;
+
+  const dows = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  let html = dows.map(d=>`<div class="cal-dow">${d}</div>`).join('');
+
+  const firstDay = new Date(year, month, 1);
+  const startOffset = firstDay.getDay();
+  const daysInMonth = new Date(year, month+1, 0).getDate();
+  const daysInPrevMonth = new Date(year, month, 0).getDate();
+  const todayISO = new Date().toISOString().slice(0,10);
+
+  const list = filteredDemandas();
+  const eventsByDay = {};
+  list.forEach(d=>{
+    if(!d.prazo) return;
+    eventsByDay[d.prazo] = eventsByDay[d.prazo] || [];
+    eventsByDay[d.prazo].push(d);
+  });
+
+  const cellsBefore = startOffset;
+  const totalCells = Math.ceil((cellsBefore + daysInMonth) / 7) * 7;
+
+  for(let i=0;i<totalCells;i++){
+    const dayNum = i - cellsBefore + 1;
+    let cellDate, otherMonth = false;
+    if(dayNum < 1){
+      cellDate = new Date(year, month-1, daysInPrevMonth + dayNum);
+      otherMonth = true;
+    } else if(dayNum > daysInMonth){
+      cellDate = new Date(year, month+1, dayNum - daysInMonth);
+      otherMonth = true;
+    } else {
+      cellDate = new Date(year, month, dayNum);
+    }
+    const iso = cellDate.toISOString().slice(0,10);
+    const isToday = iso === todayISO;
+    const events = eventsByDay[iso] || [];
+    const shown = events.slice(0,3);
+    const extra = events.length - shown.length;
+
+    html += `
+      <div class="cal-day ${otherMonth?'other-month':''} ${isToday?'today':''}">
+        <span class="cal-daynum">${cellDate.getDate()}</span>
+        ${shown.map(ev=>`<div class="cal-event" data-pilar="${ev.pilar}" data-id="${ev.id}">${escapeHTML(ev.titulo)}</div>`).join('')}
+        ${extra>0 ? `<div class="cal-more">+${extra} mais</div>` : ''}
+      </div>`;
+  }
+  grid.innerHTML = html;
+
+  grid.querySelectorAll('.cal-event').forEach(ev=>{
+    ev.addEventListener('click', ()=> openModal(ev.dataset.id));
+  });
+}
+
+/* ---------------- Modal ---------------- */
+function openModal(id, presetStatus){
+  editingId = id;
+  const overlay = document.getElementById('overlay');
+  document.getElementById('modal-title').textContent = id ? 'Editar demanda' : 'Nova demanda';
+  document.getElementById('btn-excluir').style.display = id ? 'inline-flex' : 'none';
+
+  let d = id ? demandas.find(x=>x.id===id) : {
+    titulo:'', pilar:'ambiental', desc:'', responsavel:'', prazo:'', status: presetStatus || 'fila', apoio:false, apoioQuem:''
+  };
+
+  document.getElementById('f-titulo').value = d.titulo;
+  document.getElementById('f-desc').value = d.desc;
+  document.getElementById('f-responsavel').value = d.responsavel;
+  document.getElementById('f-prazo').value = d.prazo;
+  document.getElementById('f-status').value = d.status;
+
+  document.querySelectorAll('.pilar-opt').forEach(o=> o.classList.toggle('selected', o.dataset.pilar === d.pilar));
+  document.querySelectorAll('#f-apoio-toggle .radio-opt').forEach(o=> o.classList.toggle('selected', o.dataset.val === (d.apoio?'sim':'nao')));
+  document.getElementById('f-apoio-wrap').style.display = d.apoio ? 'block' : 'none';
+  document.getElementById('f-apoio-quem').value = d.apoioQuem || '';
+
+  overlay.classList.add('show');
+  document.getElementById('f-titulo').focus();
+}
+function closeModal(){
+  document.getElementById('overlay').classList.remove('show');
+  editingId = null;
+}
+
+async function saveFromModal(){
+  if(!apiConfigured()){ showBanner('banner-config'); return; }
+  const titulo = document.getElementById('f-titulo').value.trim();
+  if(!titulo){ document.getElementById('f-titulo').focus(); return; }
+  const pilar = document.querySelector('.pilar-opt.selected')?.dataset.pilar || 'ambiental';
+  const apoio = document.querySelector('#f-apoio-toggle .radio-opt.selected')?.dataset.val === 'sim';
+
+  const data = {
+    id: editingId || undefined,
+    titulo,
+    pilar,
+    desc: document.getElementById('f-desc').value.trim(),
+    responsavel: document.getElementById('f-responsavel').value.trim(),
+    prazo: document.getElementById('f-prazo').value,
+    status: document.getElementById('f-status').value,
+    apoio,
+    apoioQuem: document.getElementById('f-apoio-quem').value.trim()
+  };
+
+  const btn = document.getElementById('btn-salvar');
+  btn.disabled = true; btn.textContent = 'Salvando...';
+  try{
+    const result = await apiSave(data);
+    const finalId = result && result.id ? result.id : editingId;
+    if(editingId){
+      const idx = demandas.findIndex(d=>d.id===editingId);
+      if(idx>-1) demandas[idx] = {...demandas[idx], ...data, id:finalId};
+    } else {
+      demandas.push({...data, id:finalId});
+    }
+    hideBanner('banner-error');
+    closeModal();
+    renderAll();
+  }catch(e){
+    console.error('Erro ao salvar demanda', e);
+    showBanner('banner-error', 'Não foi possível salvar na planilha. Tente novamente.');
+  }
+  btn.disabled = false; btn.textContent = 'Salvar';
+}
+
+async function deleteCurrent(){
+  if(!editingId) return;
+  const btn = document.getElementById('btn-excluir');
+  btn.disabled = true; btn.textContent = 'Excluindo...';
+  try{
+    await apiDelete(editingId);
+    demandas = demandas.filter(d=>d.id!==editingId);
+    hideBanner('banner-error');
+    closeModal();
+    renderAll();
+  }catch(e){
+    console.error('Erro ao excluir demanda', e);
+    showBanner('banner-error', 'Não foi possível excluir na planilha. Tente novamente.');
+  }
+  btn.disabled = false; btn.textContent = 'Excluir';
+}
+
+/* ---------------- Wiring ---------------- */
+function renderAll(){
+  renderCounts();
+  if(currentView === 'board') renderBoard();
+  else renderCalendar();
+}
+
+document.getElementById('btn-nova').addEventListener('click', ()=> openModal(null));
+document.getElementById('modal-close').addEventListener('click', closeModal);
+document.getElementById('btn-cancelar').addEventListener('click', closeModal);
+document.getElementById('btn-salvar').addEventListener('click', saveFromModal);
+document.getElementById('btn-excluir').addEventListener('click', deleteCurrent);
+document.getElementById('overlay').addEventListener('click', e=>{ if(e.target.id==='overlay') closeModal(); });
+
+document.querySelectorAll('.pilar-opt').forEach(o=>{
+  o.addEventListener('click', ()=>{
+    document.querySelectorAll('.pilar-opt').forEach(x=>x.classList.remove('selected'));
+    o.classList.add('selected');
+  });
+});
+document.querySelectorAll('#f-apoio-toggle .radio-opt').forEach(o=>{
+  o.addEventListener('click', ()=>{
+    document.querySelectorAll('#f-apoio-toggle .radio-opt').forEach(x=>x.classList.remove('selected'));
+    o.classList.add('selected');
+    document.getElementById('f-apoio-wrap').style.display = o.dataset.val === 'sim' ? 'block' : 'none';
+  });
+});
+
+document.querySelectorAll('.tab').forEach(tab=>{
+  tab.addEventListener('click', ()=>{
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    currentView = tab.dataset.view;
+    document.getElementById('view-board').style.display = currentView==='board' ? 'block':'none';
+    document.getElementById('view-calendar').style.display = currentView==='calendar' ? 'block':'none';
+    renderAll();
+  });
+});
+
+document.querySelectorAll('.chip').forEach(chip=>{
+  chip.addEventListener('click', ()=>{
+    currentFilter = chip.dataset.pilar;
+    renderAll();
+  });
+});
+
+document.getElementById('cal-prev').addEventListener('click', ()=>{
+  calRefDate.setMonth(calRefDate.getMonth()-1);
+  renderCalendar();
+});
+document.getElementById('cal-next').addEventListener('click', ()=>{
+  calRefDate.setMonth(calRefDate.getMonth()+1);
+  renderCalendar();
+});
+document.getElementById('cal-today').addEventListener('click', ()=>{
+  calRefDate = new Date(); calRefDate.setDate(1);
+  renderCalendar();
+});
+
+document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeModal(); });
+
+document.getElementById('btn-atualizar').addEventListener('click', async ()=>{
+  const btn = document.getElementById('btn-atualizar');
+  btn.disabled = true; btn.textContent = 'Atualizando...';
+  await loadData();
+  renderAll();
+  btn.disabled = false; btn.textContent = '↻ Atualizar';
+});
+
+/* ---------------- Init ---------------- */
+(async function init(){
+  await loadData();
+  renderAll();
+})();
+</script>
+</body>
+</html>
