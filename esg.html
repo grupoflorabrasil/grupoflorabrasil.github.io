@@ -393,6 +393,11 @@ function hideBanner(id){
   document.getElementById(id).classList.remove('show');
 }
 
+function normalizeDateField(v){
+  if(typeof v === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(v)) return v.slice(0,10);
+  return v || '';
+}
+
 async function loadData(){
   if(!apiConfigured()){
     showBanner('banner-config');
@@ -409,11 +414,12 @@ async function loadData(){
     if(data && data.error) throw new Error(data.error);
     demandas = (Array.isArray(data) ? data : []).map(d => ({
       ...d,
+      prazo: normalizeDateField(d.prazo),
       apoio: d.apoio === true || d.apoio === 'true' || d.apoio === 'TRUE'
     }));
   }catch(e){
     console.error('Erro ao carregar dados', e);
-    showBanner('banner-error', 'Não foi possível carregar os dados da planilha. Confira se a aba "ESG" existe na planilha do Marketing.');
+    showBanner('banner-error', 'Não foi possível carregar os dados da planilha. Confira se a aba "ESG" existe e se a implantação está pública.');
     demandas = [];
   }
 }
