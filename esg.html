@@ -168,13 +168,25 @@
   .cal-day.today{border-color:var(--ambiental);}
   .cal-daynum{font-size:11px;font-weight:700;color:var(--text-faint);}
   .cal-event{
-    font-size:10.5px;font-weight:600;padding:3px 6px;border-radius:5px;cursor:pointer;
+    font-size:10.5px;font-weight:600;padding:3px 6px 3px 8px;border-radius:5px;cursor:pointer;
     white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    border-left:3px solid transparent;
   }
   .cal-event[data-pilar="ambiental"]{background:var(--ambiental-bg);color:var(--ambiental);}
   .cal-event[data-pilar="social"]{background:var(--social-bg);color:var(--social);}
   .cal-event[data-pilar="governanca"]{background:var(--governanca-bg);color:var(--governanca);}
+  .cal-event[data-urgencia="atrasado"]{border-left-color:var(--danger);}
+  .cal-event[data-urgencia="proximo"]{border-left-color:var(--governanca);}
+  .cal-event[data-urgencia="tranquilo"]{border-left-color:var(--ambiental);}
+  .cal-day.tem-atraso{border-color:var(--danger);}
   .cal-more{font-size:10px;color:var(--text-faint);padding-left:6px;}
+
+  .cal-legenda{
+    display:flex;gap:16px;align-items:center;padding:10px 4px 0;
+    font-size:11px;color:var(--text-dim);flex-wrap:wrap;
+  }
+  .cal-legenda span{display:inline-flex;align-items:center;gap:5px;}
+  .cal-legenda .dot-leg{width:8px;height:8px;border-radius:50%;display:inline-block;}
 
   /* ---------- Modal ---------- */
   .overlay{
@@ -286,6 +298,11 @@
           <button id="cal-today" style="width:auto;padding:0 12px;font-size:11px;">Hoje</button>
           <button id="cal-next">›</button>
         </div>
+      </div>
+      <div class="cal-legenda">
+        <span><span class="dot-leg" style="background:var(--danger);"></span>Atrasado</span>
+        <span><span class="dot-leg" style="background:var(--governanca);"></span>Prazo próximo (até 3 dias)</span>
+        <span><span class="dot-leg" style="background:var(--ambiental);"></span>Tem tempo</span>
       </div>
       <div class="cal-grid" id="cal-grid"></div>
     </div>
@@ -452,6 +469,16 @@ function dueStatus(iso){
   return '';
 }
 
+function calcUrgencia(d){
+  if(!d.prazo || d.status === 'concluido') return null;
+  const today = new Date(); today.setHours(0,0,0,0);
+  const due = new Date(d.prazo+'T00:00:00');
+  const diff = Math.round((due-today)/86400000);
+  if(diff < 0) return 'atrasado';
+  if(diff <= 3) return 'proximo';
+  return 'tranquilo';
+}
+
 function filteredDemandas(){
   if(currentFilter === 'todos') return demandas;
   return demandas.filter(d=>d.pilar === currentFilter);
@@ -596,11 +623,12 @@ function renderCalendar(){
     const events = eventsByDay[iso] || [];
     const shown = events.slice(0,3);
     const extra = events.length - shown.length;
+    const temAtraso = events.some(ev => calcUrgencia(ev) === 'atrasado');
 
     html += `
-      <div class="cal-day ${otherMonth?'other-month':''} ${isToday?'today':''}">
+      <div class="cal-day ${otherMonth?'other-month':''} ${isToday?'today':''} ${temAtraso?'tem-atraso':''}">
         <span class="cal-daynum">${cellDate.getDate()}</span>
-        ${shown.map(ev=>`<div class="cal-event" data-pilar="${ev.pilar}" data-id="${ev.id}">${escapeHTML(ev.titulo)}</div>`).join('')}
+        ${shown.map(ev=>`<div class="cal-event" data-pilar="${ev.pilar}" data-urgencia="${calcUrgencia(ev)||''}" data-id="${ev.id}">${escapeHTML(ev.titulo)}</div>`).join('')}
         ${extra>0 ? `<div class="cal-more">+${extra} mais</div>` : ''}
       </div>`;
   }
