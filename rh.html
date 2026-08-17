@@ -2,6 +2,12 @@
 <html lang="pt-BR">
 <head>
 <meta charset="UTF-8" />
+<script>
+  // Trava de acesso: se a pessoa não passou pela tela de senha, volta para a home
+  if (sessionStorage.getItem('acesso_rh') !== 'ok') {
+    window.location.href = '/index.html';
+  }
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Painel de RH</title>
 <style>
@@ -18,14 +24,12 @@
     --warn: #e0a63c;
     --bad: #d9695f;
 
-    --c-motorista: #5a8fd6;
-    --c-motorista-bg: #1c2a3d;
-    --c-operador: #e0a63c;
-    --c-operador-bg: #3a2f1a;
-    --c-administrativo: #a879d1;
-    --c-administrativo-bg: #2b2038;
-    --c-outros: #5fb7a8;
-    --c-outros-bg: #1a3330;
+    --c-viveiro: #4a9c5f;
+    --c-viveiro-bg: #1a3320;
+    --c-novociclo: #2f9c76;
+    --c-novociclo-bg: #17332a;
+    --c-lotus: #c26bb0;
+    --c-lotus-bg: #33202e;
 
     --radius: 12px;
     --font-head: 'Segoe UI', system-ui, sans-serif;
@@ -100,10 +104,9 @@
   .btn-danger{ color: var(--bad); }
 
   .badge{ display:inline-block; padding:3px 9px; border-radius:20px; font-size:11px; font-weight:600; letter-spacing:0.2px;}
-  .badge.motorista{ background: var(--c-motorista-bg); color: var(--c-motorista);}
-  .badge.operador{ background: var(--c-operador-bg); color: var(--c-operador);}
-  .badge.administrativo{ background: var(--c-administrativo-bg); color: var(--c-administrativo);}
-  .badge.outros{ background: var(--c-outros-bg); color: var(--c-outros);}
+  .badge.viveiro{ background: var(--c-viveiro-bg); color: var(--c-viveiro);}
+  .badge.novociclo{ background: var(--c-novociclo-bg); color: var(--c-novociclo);}
+  .badge.lotus{ background: var(--c-lotus-bg); color: var(--c-lotus);}
 
   input[type=text], input[type=date], input[type=tel], input[type=email], textarea, select{
     width:100%; padding:10px 12px; border-radius:8px; border:1px solid var(--line);
@@ -143,7 +146,7 @@
   .cal-day.today{ border-color: var(--accent); }
   .cal-item{ font-size:10.5px; padding:3px 6px; border-radius:5px; margin-bottom:3px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; cursor:pointer;}
   .cal-item.overdue{ background: #3d1f1c; color: var(--bad); }
-  .cal-item.soon{ background: var(--c-operador-bg); color: var(--c-operador); }
+  .cal-item.soon{ background: var(--c-novociclo-bg); color: var(--c-novociclo); }
   .cal-item.ok{ background: #1a3327; color: var(--good); }
 
   /* ---------- CURRÍCULOS ---------- */
@@ -271,12 +274,11 @@
     <label>Título da demanda</label>
     <input type="text" id="d-titulo" placeholder="Ex: Contratar motorista para rota Norte" />
 
-    <label>Área</label>
+    <label>Empresa</label>
     <select id="d-tipo">
-      <option value="motorista">Motorista</option>
-      <option value="operador">Operador</option>
-      <option value="administrativo">Administrativo</option>
-      <option value="outros">Outros</option>
+      <option value="viveiro">Viveiro Flora Brasil</option>
+      <option value="novociclo">Novo Ciclo</option>
+      <option value="lotus">Lotus</option>
     </select>
 
     <label>Status</label>
@@ -313,12 +315,11 @@
     <label>Nome completo</label>
     <input type="text" id="c-nome" placeholder="Nome do candidato" />
 
-    <label>Área</label>
+    <label>Empresa</label>
     <select id="c-tipo">
-      <option value="motorista">Motorista</option>
-      <option value="operador">Operador</option>
-      <option value="administrativo">Administrativo</option>
-      <option value="outros">Outros</option>
+      <option value="viveiro">Viveiro Flora Brasil</option>
+      <option value="novociclo">Novo Ciclo</option>
+      <option value="lotus">Lotus</option>
     </select>
 
     <label>Cargo pretendido</label>
@@ -356,10 +357,9 @@ const SENHA_ACESSO = '1996'; // troque se quiser
 
 const STATUS_COLS = ['Fila', 'Em andamento', 'Revisão', 'Concluído'];
 const TIPOS = [
-  { id: 'motorista', label: 'Motorista' },
-  { id: 'operador', label: 'Operador' },
-  { id: 'administrativo', label: 'Administrativo' },
-  { id: 'outros', label: 'Outros' }
+  { id: 'viveiro', label: 'Viveiro Flora Brasil' },
+  { id: 'novociclo', label: 'Novo Ciclo' },
+  { id: 'lotus', label: 'Lotus' }
 ];
 
 let demandas = [];
@@ -498,7 +498,7 @@ function abrirModalDemanda(d){
   document.getElementById('modal-demanda-titulo').textContent = d ? 'Editar demanda' : 'Nova demanda';
   document.getElementById('d-id').value = d ? d.id : '';
   document.getElementById('d-titulo').value = d ? d.titulo : '';
-  document.getElementById('d-tipo').value = d ? d.tipo : 'motorista';
+  document.getElementById('d-tipo').value = d ? d.tipo : 'viveiro';
   document.getElementById('d-status').value = d ? d.status : 'Fila';
   document.getElementById('d-prazo').value = d ? d.prazo : '';
   document.getElementById('d-responsavel').value = d ? d.responsavel : '';
@@ -650,7 +650,7 @@ function abrirModalCurriculo(c){
   document.getElementById('modal-curriculo-titulo').textContent = c ? 'Editar currículo' : 'Novo currículo';
   document.getElementById('c-id').value = c ? c.id : '';
   document.getElementById('c-nome').value = c ? c.nome : '';
-  document.getElementById('c-tipo').value = c ? c.tipo : 'motorista';
+  document.getElementById('c-tipo').value = c ? c.tipo : 'viveiro';
   document.getElementById('c-cargo').value = c ? c.cargoPretendido : '';
   document.getElementById('c-telefone').value = c ? c.telefone : '';
   document.getElementById('c-email').value = c ? c.email : '';
