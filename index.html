@@ -209,6 +209,13 @@ body{
     <div class="client-desc">Painel de indicadores ESG.</div>
     <div class="enter-hint">Clique para acessar →</div>
   </div>
+
+  <div class="client-card esg" id="card-rh">
+    <div class="client-label">Área</div>
+    <h2>RH</h2>
+    <div class="client-desc">Painel de Recursos Humanos.</div>
+    <div class="enter-hint">Clique para acessar →</div>
+  </div>
 </div>
 
 <div class="overlay" id="overlay-senha">
@@ -227,15 +234,18 @@ body{
 <script>
 const SENHAS = {
   marketing: '1996',
-  esg: '1996'
+  esg: '1996',
+  rh: '1996'
 };
 const DESTINOS = {
   marketing: 'marketing.html',
-  esg: 'esg.html'
+  esg: 'esg.html',
+  rh: 'rh.html'
 };
 const NOMES = {
   marketing: 'Marketing',
-  esg: 'ESG'
+  esg: 'ESG',
+  rh: 'RH'
 };
 
 let clienteAtual = null;
@@ -245,6 +255,9 @@ document.getElementById('card-marketing').addEventListener('click', ()=>{
 });
 document.getElementById('card-esg').addEventListener('click', ()=>{
   abrirSenha('esg');
+});
+document.getElementById('card-rh').addEventListener('click', ()=>{
+  abrirSenha('rh');
 });
 
 function abrirSenha(cliente){
