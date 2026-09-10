@@ -216,6 +216,13 @@ body{
     <div class="client-desc">Painel de Recursos Humanos.</div>
     <div class="enter-hint">Clique para acessar →</div>
   </div>
+
+  <div class="client-card esg" id="card-concurso">
+    <div class="client-label">Área</div>
+    <h2>Concurso</h2>
+    <div class="client-desc">Banco de imagens e dados dos participantes.</div>
+    <div class="enter-hint">Clique para acessar →</div>
+  </div>
 </div>
 
 <div class="overlay" id="overlay-senha">
@@ -235,17 +242,20 @@ body{
 const SENHAS = {
   marketing: '1996',
   esg: '1996',
-  rh: '1996'
+  rh: '1996',
+  concurso: '1996'
 };
 const DESTINOS = {
   marketing: 'marketing.html',
   esg: 'esg.html',
-  rh: 'rh.html'
+  rh: 'rh.html',
+  concurso: 'concurso.html'
 };
 const NOMES = {
   marketing: 'Marketing',
   esg: 'ESG',
-  rh: 'RH'
+  rh: 'RH',
+  concurso: 'Concurso'
 };
 
 let clienteAtual = null;
@@ -258,6 +268,9 @@ document.getElementById('card-esg').addEventListener('click', ()=>{
 });
 document.getElementById('card-rh').addEventListener('click', ()=>{
   abrirSenha('rh');
+});
+document.getElementById('card-concurso').addEventListener('click', ()=>{
+  abrirSenha('concurso');
 });
 
 function abrirSenha(cliente){
