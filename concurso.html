@@ -191,6 +191,78 @@ td img{
 .lightbox.aberto{ display:flex; }
 .lightbox img{ max-width:90vw; max-height:90vh; border-radius:8px; box-shadow:0 10px 40px rgba(0,0,0,0.5); }
 td img{ cursor:zoom-in; }
+
+.seletor-card{
+  background:var(--paper);
+  color:var(--text-on-paper);
+  border-radius:8px;
+  box-shadow:0 2px 6px rgba(0,0,0,0.25);
+  padding:22px 24px;
+  margin-bottom:24px;
+}
+.seletor-card h2{
+  font-family:'Fraunces',serif;
+  font-style:italic;
+  font-weight:500;
+  font-size:19px;
+  margin:0 0 16px;
+}
+.seletor-linha{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  align-items:center;
+}
+.seletor-linha select, .seletor-linha input{
+  font-family:'Inter',sans-serif;
+  font-size:14px;
+  padding:10px 12px;
+  border-radius:6px;
+  border:1px solid rgba(28,36,24,0.2);
+  background:#fff;
+  color:var(--text-on-paper);
+}
+.seletor-linha select{ min-width:220px; }
+.seletor-linha button{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:12px;
+  text-transform:uppercase;
+  background:var(--verde);
+  color:#fff;
+  border:none;
+  padding:10px 16px;
+  border-radius:6px;
+  cursor:pointer;
+}
+.seletor-linha button.secundario{ background:var(--azul); }
+.link-banca{
+  margin-top:14px;
+  display:none;
+  align-items:center;
+  gap:10px;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:12px;
+}
+.link-banca input{
+  flex:1;
+  background:var(--paper-dim);
+  border:1px solid rgba(28,36,24,0.15);
+  padding:8px 10px;
+  border-radius:6px;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11.5px;
+}
+.trocar-concurso{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;
+  color:var(--mist);
+  text-decoration:underline;
+  cursor:pointer;
+  background:none;
+  border:none;
+  padding:0;
+}
+.oculto{ display:none !important; }
 </style>
 </head>
 <body>
@@ -202,37 +274,60 @@ td img{ cursor:zoom-in; }
 
   <div class="page-header">
     <h1>Concurso</h1>
-    <div class="sub">Dados completos — acesso restrito</div>
+    <div class="sub" id="subtitulo">Dados completos — acesso restrito</div>
   </div>
 
-  <div class="form-card">
-    <h2>Adicionar participante</h2>
-    <form id="form-novo">
-      <input required id="f-codigo" placeholder="Código (ex: C003)">
-      <input required id="f-nome" placeholder="Nome do colaborador">
-      <select required id="f-empresa">
-        <option value="">Empresa</option>
-        <option>Viveiro Flora Brasil</option>
-        <option>Novo Ciclo</option>
-        <option>Lótus Soluções Ambientais</option>
+  <div class="seletor-card">
+    <h2>Qual concurso você quer gerenciar?</h2>
+    <div class="seletor-linha">
+      <select id="select-concurso">
+        <option value="">Carregando concursos...</option>
       </select>
-      <input required id="f-telefone" placeholder="Telefone">
-      <input id="f-foto" type="file" accept="image/*">
-      <button type="submit">Salvar participante</button>
-    </form>
-    <p id="form-status"></p>
+      <span>ou</span>
+      <input id="novo-concurso" placeholder="Nome de um concurso novo">
+      <button onclick="criarNovoConcurso()">Criar</button>
+      <button class="secundario" onclick="usarConcursoSelecionado()">Usar este</button>
+    </div>
+    <div id="link-banca" class="link-banca">
+      <span>Link da banca:</span>
+      <input id="link-banca-input" readonly>
+      <button onclick="copiarLinkBanca()">Copiar</button>
+    </div>
   </div>
 
-  <div class="card">
-    <table id="tabela" style="display:none;">
-      <thead>
-        <tr>
-          <th>Foto</th><th>Código</th><th>Nome</th><th>Empresa</th><th>Telefone</th><th>Nota da banca</th>
-        </tr>
-      </thead>
-      <tbody id="tbody"></tbody>
-    </table>
-    <div id="estado" class="estado">Carregando…</div>
+  <div id="area-concurso" class="oculto">
+    <button class="trocar-concurso" onclick="trocarConcurso()" style="margin-bottom:16px;">← trocar de concurso</button>
+
+    <div class="form-card">
+      <h2>Adicionar participante</h2>
+      <form id="form-novo">
+        <input required id="f-codigo" placeholder="Código (ex: C003)">
+        <input required id="f-nome" placeholder="Nome do colaborador">
+        <select required id="f-empresa">
+          <option value="">Empresa</option>
+          <option>Viveiro Flora Brasil</option>
+          <option>Novo Ciclo</option>
+          <option>Lótus Soluções Ambientais</option>
+        </select>
+        <input required id="f-telefone" placeholder="Telefone">
+        <input id="f-foto" type="file" accept="image/*">
+        <button type="submit">Salvar participante</button>
+      </form>
+      <p id="form-status"></p>
+    </div>
+
+    <div class="card">
+      <table id="tabela" style="display:none;">
+        <thead>
+          <tr>
+            <th>Foto</th><th>Código</th><th>Nome</th><th>Empresa</th><th>Telefone</th>
+            <th>Jurado 1</th><th>Jurado 2</th><th>Jurado 3</th><th>Jurado 4</th><th>Total</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+      <div id="estado" class="estado">Carregando…</div>
+    </div>
   </div>
 </div>
 
@@ -247,11 +342,11 @@ td img{ cursor:zoom-in; }
   }
 
   // Mesma URL do Web App usada em Code.gs
-  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxJEZOkw4cFLEVNpWfbHy94RjLUC2bSXBQe1-2iXzSkSgDTKKzfRup07jIhm05OOugY/exec';
+  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyZwiWg-lCFtCS1komzwk_8fQWflGzTZFA21xo6Ybjvg1Fr2gaTyeVhdm0FelIFQ7_e/exec';
   // Precisa bater com a propriedade SENHA_CONCURSO no Apps Script.
-  // A proteção real já é o backend (só devolve os dados com essa senha);
-  // isso evita pedir senha duas vezes já que o card no index.html já pediu.
   const SENHA_ADMIN = '1996';
+
+  let concursoAtual = null;
 
   function badge(empresa) {
     if (!empresa) return '';
@@ -272,20 +367,81 @@ td img{ cursor:zoom-in; }
     document.getElementById('lightbox').classList.remove('aberto');
   }
 
+  async function carregarListaConcursos() {
+    const select = document.getElementById('select-concurso');
+    try {
+      const resp = await fetch(`${APPS_SCRIPT_URL}?action=listarConcursos&senha=${encodeURIComponent(SENHA_ADMIN)}`);
+      const nomes = await resp.json();
+
+      if (nomes.erro) {
+        select.innerHTML = `<option value="">Erro: ${nomes.erro}</option>`;
+        return;
+      }
+      if (!Array.isArray(nomes) || nomes.length === 0) {
+        select.innerHTML = `<option value="">Nenhum concurso ainda — crie um ao lado</option>`;
+        return;
+      }
+      select.innerHTML = nomes.map(n => `<option value="${n}">${n}</option>`).join('');
+    } catch (err) {
+      select.innerHTML = `<option value="">Não foi possível carregar</option>`;
+      console.error(err);
+    }
+  }
+
+  function criarNovoConcurso() {
+    const nome = document.getElementById('novo-concurso').value.trim();
+    if (!nome) return;
+    concursoAtual = nome;
+    ativarConcurso();
+  }
+
+  function usarConcursoSelecionado() {
+    const nome = document.getElementById('select-concurso').value;
+    if (!nome) return;
+    concursoAtual = nome;
+    ativarConcurso();
+  }
+
+  function ativarConcurso() {
+    document.getElementById('subtitulo').textContent = concursoAtual + ' — acesso restrito';
+    document.getElementById('area-concurso').classList.remove('oculto');
+
+    const linkBanca = new URL('concurso-banca.html', window.location.href);
+    linkBanca.searchParams.set('concurso', concursoAtual);
+    document.getElementById('link-banca-input').value = linkBanca.href;
+    document.getElementById('link-banca').style.display = 'flex';
+
+    carregar();
+  }
+
+  function trocarConcurso() {
+    concursoAtual = null;
+    document.getElementById('area-concurso').classList.add('oculto');
+    document.getElementById('link-banca').style.display = 'none';
+    document.getElementById('subtitulo').textContent = 'Dados completos — acesso restrito';
+    carregarListaConcursos();
+  }
+
+  function copiarLinkBanca() {
+    const input = document.getElementById('link-banca-input');
+    input.select();
+    navigator.clipboard.writeText(input.value);
+  }
+
   async function carregar() {
     const estado = document.getElementById('estado');
     const tabela = document.getElementById('tabela');
     try {
-      const resp = await fetch(`${APPS_SCRIPT_URL}?action=admin&senha=${encodeURIComponent(SENHA_ADMIN)}`);
+      const resp = await fetch(`${APPS_SCRIPT_URL}?action=admin&senha=${encodeURIComponent(SENHA_ADMIN)}&concurso=${encodeURIComponent(concursoAtual)}`);
       const dados = await resp.json();
 
       if (dados.erro) {
-        estado.textContent = 'Não foi possível carregar os dados (senha do script incorreta).';
+        estado.textContent = 'Não foi possível carregar os dados (' + dados.erro + ').';
         estado.classList.add('erro');
         return;
       }
       if (!Array.isArray(dados) || dados.length === 0) {
-        estado.textContent = 'Nenhum participante cadastrado ainda.';
+        estado.textContent = 'Nenhum participante cadastrado ainda neste concurso.';
         tabela.style.display = 'none';
         estado.style.display = 'block';
         return;
@@ -298,7 +454,11 @@ td img{ cursor:zoom-in; }
           <td>${row['Nome'] || ''}</td>
           <td>${badge(row['Empresa'])}</td>
           <td>${row['Telefone'] || ''}</td>
-          <td>${row['Nota da Banca'] || '—'}</td>
+          <td>${row['Nota_Jurado1'] !== '' && row['Nota_Jurado1'] !== undefined ? row['Nota_Jurado1'] : '—'}</td>
+          <td>${row['Nota_Jurado2'] !== '' && row['Nota_Jurado2'] !== undefined ? row['Nota_Jurado2'] : '—'}</td>
+          <td>${row['Nota_Jurado3'] !== '' && row['Nota_Jurado3'] !== undefined ? row['Nota_Jurado3'] : '—'}</td>
+          <td>${row['Nota_Jurado4'] !== '' && row['Nota_Jurado4'] !== undefined ? row['Nota_Jurado4'] : '—'}</td>
+          <td><strong>${row['NotaTotal'] !== '' && row['NotaTotal'] !== undefined ? row['NotaTotal'] : '—'}</strong></td>
         </tr>
       `).join('');
 
@@ -337,6 +497,7 @@ td img{ cursor:zoom-in; }
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify({
           senha: SENHA_ADMIN,
+          concurso: concursoAtual,
           codigo: document.getElementById('f-codigo').value,
           nome: document.getElementById('f-nome').value,
           empresa: document.getElementById('f-empresa').value,
@@ -364,7 +525,7 @@ td img{ cursor:zoom-in; }
     }
   });
 
-  carregar();
+  carregarListaConcursos();
 </script>
 </body>
 </html>

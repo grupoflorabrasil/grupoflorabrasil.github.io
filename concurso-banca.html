@@ -78,9 +78,73 @@ body{
   font-size:13px;
   letter-spacing:0.5px;
   text-align:center;
-  padding:12px;
+  padding:12px 12px 8px;
   border-top:1px solid rgba(28,36,24,0.12);
 }
+.card .nota-area{
+  padding:0 12px 14px;
+  display:flex;
+  gap:8px;
+}
+.card .nota-area input{
+  width:100%;
+  font-family:'Inter',sans-serif;
+  font-size:14px;
+  padding:8px 10px;
+  border-radius:6px;
+  border:1px solid rgba(28,36,24,0.2);
+  text-align:center;
+}
+.card .nota-area button{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;
+  text-transform:uppercase;
+  background:var(--verde);
+  color:#fff;
+  border:none;
+  border-radius:6px;
+  padding:0 12px;
+  cursor:pointer;
+  white-space:nowrap;
+}
+.card .nota-area button:hover{ opacity:0.9; }
+.card .nota-status{
+  padding:0 12px 12px;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:10.5px;
+  color:var(--text-muted-on-paper);
+  min-height:14px;
+}
+
+.seletor-jurado{
+  max-width:420px;
+  margin:0 auto 32px;
+  background:var(--paper);
+  color:var(--text-on-paper);
+  border-radius:8px;
+  padding:18px 20px;
+  box-shadow:0 2px 6px rgba(0,0,0,0.25);
+  text-align:center;
+}
+.seletor-jurado label{
+  display:block;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:0.5px;
+  color:var(--text-muted-on-paper);
+  margin-bottom:10px;
+}
+.seletor-jurado select{
+  width:100%;
+  font-family:'Inter',sans-serif;
+  font-size:15px;
+  padding:10px 12px;
+  border-radius:6px;
+  border:1px solid rgba(28,36,24,0.2);
+  background:#fff;
+}
+.grid.travado{ opacity:0.35; pointer-events:none; }
 
 .estado{
   text-align:center;
@@ -109,11 +173,22 @@ body{
 
 <div class="wrap">
   <div class="page-header">
-    <h1>Concurso — Avaliação</h1>
+    <h1 id="titulo-concurso">Concurso — Avaliação</h1>
     <div class="sub">Avalie cada participante pelo código · Grupo Flora Brasil</div>
   </div>
 
-  <div id="grid" class="grid"></div>
+  <div class="seletor-jurado">
+    <label>Quem está avaliando?</label>
+    <select id="select-jurado">
+      <option value="">Selecione...</option>
+      <option>Jurado 1</option>
+      <option>Jurado 2</option>
+      <option>Jurado 3</option>
+      <option>Jurado 4</option>
+    </select>
+  </div>
+
+  <div id="grid" class="grid travado"></div>
   <div id="estado" class="estado">Carregando fotos…</div>
 </div>
 
@@ -123,7 +198,14 @@ body{
 
 <script>
   // Mesma URL do Web App usada em Code.gs
-  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxJEZOkw4cFLEVNpWfbHy94RjLUC2bSXBQe1-2iXzSkSgDTKKzfRup07jIhm05OOugY/exec';
+  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyZwiWg-lCFtCS1komzwk_8fQWflGzTZFA21xo6Ybjvg1Fr2gaTyeVhdm0FelIFQ7_e/exec';
+
+  const params = new URLSearchParams(window.location.search);
+  const CONCURSO = params.get('concurso');
+
+  if (CONCURSO) {
+    document.getElementById('titulo-concurso').textContent = 'Concurso — ' + CONCURSO;
+  }
 
   function abrirLightbox(url) {
     if (!url) return;
@@ -137,8 +219,14 @@ body{
   async function carregar() {
     const estado = document.getElementById('estado');
     const grid = document.getElementById('grid');
+
+    if (!CONCURSO) {
+      estado.textContent = 'Link incompleto — falta indicar qual concurso (parâmetro ?concurso= na URL).';
+      return;
+    }
+
     try {
-      const resp = await fetch(`${APPS_SCRIPT_URL}?action=banca`);
+      const resp = await fetch(`${APPS_SCRIPT_URL}?action=banca&concurso=${encodeURIComponent(CONCURSO)}`);
       const dados = await resp.json();
 
       if (!Array.isArray(dados) || dados.length === 0) {
@@ -153,6 +241,11 @@ body{
             ${item.foto ? '' : 'sem foto'}
           </div>
           <div class="codigo">${item.codigo}</div>
+          <div class="nota-area">
+            <input type="number" min="0" max="10" step="0.5" placeholder="Nota 0-10" data-codigo="${item.codigo}">
+            <button onclick="salvarNota('${item.codigo}', this)">Salvar</button>
+          </div>
+          <div class="nota-status" data-status="${item.codigo}"></div>
         </div>
       `).join('');
     } catch (err) {
@@ -160,6 +253,55 @@ body{
       console.error(err);
     }
   }
+
+  async function salvarNota(codigo, botao) {
+    const jurado = document.getElementById('select-jurado').value;
+    const input = document.querySelector(`input[data-codigo="${codigo}"]`);
+    const status = document.querySelector(`[data-status="${codigo}"]`);
+    const nota = input.value;
+
+    if (!jurado) {
+      status.textContent = 'Selecione o jurado primeiro.';
+      return;
+    }
+    if (nota === '' || Number(nota) < 0 || Number(nota) > 10) {
+      status.textContent = 'Nota precisa ser entre 0 e 10.';
+      return;
+    }
+
+    botao.disabled = true;
+    status.textContent = 'Salvando…';
+
+    try {
+      const resp = await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ tipo: 'nota', concurso: CONCURSO, codigo, jurado, nota: Number(nota) })
+      });
+      const resultado = await resp.json();
+
+      if (resultado.erro) {
+        status.textContent = 'Erro: ' + resultado.erro;
+        botao.disabled = false;
+        return;
+      }
+      status.textContent = 'Nota salva!';
+      botao.disabled = false;
+    } catch (err) {
+      status.textContent = 'Não foi possível salvar agora.';
+      botao.disabled = false;
+      console.error(err);
+    }
+  }
+
+  document.getElementById('select-jurado').addEventListener('change', function () {
+    const grid = document.getElementById('grid');
+    if (this.value) {
+      grid.classList.remove('travado');
+    } else {
+      grid.classList.add('travado');
+    }
+  });
 
   carregar();
 </script>
