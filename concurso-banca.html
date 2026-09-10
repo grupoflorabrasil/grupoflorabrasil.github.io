@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Concurso — Avaliação</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;1,9..144,500&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap');
+
+:root{
+  --ink:#12140f;
+  --verde:#007038;
+  --azul:#0f1e9b;
+  --paper:#f5f1e2;
+  --mist:#a3ab9c;
+  --text-on-paper:#1c2418;
+  --text-muted-on-paper:#6b6355;
+}
+*{box-sizing:border-box;}
+body{
+  margin:0;
+  min-height:100vh;
+  background:var(--ink);
+  color:var(--paper);
+  font-family:'Inter',sans-serif;
+  padding:40px 24px 80px;
+}
+.wrap{ width:100%; max-width:1040px; margin:0 auto; }
+
+.page-header{
+  text-align:center;
+  margin-bottom:36px;
+  padding-bottom:24px;
+  border-bottom:3px solid transparent;
+  border-image:linear-gradient(90deg, var(--verde), var(--azul)) 1;
+}
+.page-header h1{
+  font-family:'Fraunces',serif;
+  font-style:italic;
+  font-weight:500;
+  font-size:30px;
+  margin:0;
+  letter-spacing:-0.5px;
+}
+.page-header .sub{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:1.2px;
+  color:var(--mist);
+  margin-top:8px;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(190px, 1fr));
+  gap:18px;
+}
+.card{
+  background:var(--paper);
+  color:var(--text-on-paper);
+  border-radius:8px;
+  box-shadow:0 2px 6px rgba(0,0,0,0.25);
+  overflow:hidden;
+}
+.card .foto{
+  width:100%;
+  aspect-ratio:3/4;
+  background:#0000 center/cover no-repeat, var(--paper);
+  display:flex; align-items:center; justify-content:center;
+  color:var(--text-muted-on-paper);
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;
+}
+.card .codigo{
+  font-family:'IBM Plex Mono',monospace;
+  font-weight:600;
+  font-size:13px;
+  letter-spacing:0.5px;
+  text-align:center;
+  padding:12px;
+  border-top:1px solid rgba(28,36,24,0.12);
+}
+
+.estado{
+  text-align:center;
+  padding:60px 20px;
+  color:var(--mist);
+  font-family:'IBM Plex Mono',monospace;
+  font-size:12.5px;
+}
+
+.lightbox{
+  display:none;
+  position:fixed; inset:0;
+  background:rgba(0,0,0,0.9);
+  align-items:center;
+  justify-content:center;
+  z-index:1000;
+  cursor:zoom-out;
+  padding:24px;
+}
+.lightbox.aberto{ display:flex; }
+.lightbox img{ max-width:90vw; max-height:90vh; border-radius:8px; box-shadow:0 10px 40px rgba(0,0,0,0.6); }
+.card .foto{ cursor:zoom-in; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="page-header">
+    <h1>Concurso — Avaliação</h1>
+    <div class="sub">Avalie cada participante pelo código · Grupo Flora Brasil</div>
+  </div>
+
+  <div id="grid" class="grid"></div>
+  <div id="estado" class="estado">Carregando fotos…</div>
+</div>
+
+<div id="lightbox" class="lightbox" onclick="fecharLightbox()">
+  <img id="lightbox-img" src="" alt="">
+</div>
+
+<script>
+  // Mesma URL do Web App usada em Code.gs
+  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxJEZOkw4cFLEVNpWfbHy94RjLUC2bSXBQe1-2iXzSkSgDTKKzfRup07jIhm05OOugY/exec';
+
+  function abrirLightbox(url) {
+    if (!url) return;
+    document.getElementById('lightbox-img').src = url;
+    document.getElementById('lightbox').classList.add('aberto');
+  }
+  function fecharLightbox() {
+    document.getElementById('lightbox').classList.remove('aberto');
+  }
+
+  async function carregar() {
+    const estado = document.getElementById('estado');
+    const grid = document.getElementById('grid');
+    try {
+      const resp = await fetch(`${APPS_SCRIPT_URL}?action=banca`);
+      const dados = await resp.json();
+
+      if (!Array.isArray(dados) || dados.length === 0) {
+        estado.textContent = 'Nenhuma foto cadastrada ainda.';
+        return;
+      }
+
+      estado.style.display = 'none';
+      grid.innerHTML = dados.map(item => `
+        <div class="card">
+          <div class="foto" style="${item.foto ? `background-image:url('${item.foto}')` : ''}" onclick="abrirLightbox('${item.foto || ''}')">
+            ${item.foto ? '' : 'sem foto'}
+          </div>
+          <div class="codigo">${item.codigo}</div>
+        </div>
+      `).join('');
+    } catch (err) {
+      estado.textContent = 'Não foi possível carregar as fotos agora.';
+      console.error(err);
+    }
+  }
+
+  carregar();
+</script>
+</body>
+</html>
