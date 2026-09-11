@@ -308,11 +308,11 @@ td img{ width:44px; height:56px; object-fit:cover; border-radius:4px; display:bl
   </div>
 
   <div class="tabs oculto-banca" id="tabs">
-    <button class="tab-btn ativa" data-tab="participantes" onclick="mudarTab('participantes')">PARTICIPANTES</button>
-    <button class="tab-btn" data-tab="banca" onclick="mudarTab('banca')">BANCA</button>
+    <button class="tab-btn" data-tab="participantes" onclick="mudarTab('participantes')">PARTICIPANTES</button>
+    <button class="tab-btn ativa" data-tab="banca" onclick="mudarTab('banca')">BANCA</button>
   </div>
 
-  <div class="tab-conteudo ativa" id="tab-participantes">
+  <div class="tab-conteudo" id="tab-participantes">
     <div class="form-card">
       <h2>Adicionar participante</h2>
       <form id="form-novo">
@@ -345,7 +345,7 @@ td img{ width:44px; height:56px; object-fit:cover; border-radius:4px; display:bl
     </div>
   </div>
 
-  <div class="tab-conteudo" id="tab-banca">
+  <div class="tab-conteudo ativa" id="tab-banca">
     <div class="seletor-jurado">
       <label>Quem está avaliando?</label>
       <select id="select-jurado">
@@ -370,7 +370,7 @@ td img{ width:44px; height:56px; object-fit:cover; border-radius:4px; display:bl
   const MODO_BANCA = params.get('modo') === 'banca';
 
   // Mesma URL do Web App usada em Code.gs
-  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby1vEbI6PdUt-GW6VOLa-CZ8sr8akD_FtEbXW8yMEgGFDlsyf82KZgwCq70Gc0Wp341/exec';
+  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyiDPC1bAYJPxQHN8uUUZr-ttSkgBg0gEn4JR-iUTNhgnzGfd2grGWx7VsInlMZqj3m/exec';
   // Precisa bater com a propriedade SENHA_CONCURSO no Apps Script.
   const SENHA_ADMIN = '1996';
 
