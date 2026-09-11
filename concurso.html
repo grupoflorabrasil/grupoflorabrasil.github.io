@@ -197,6 +197,24 @@ td img{ width:44px; height:56px; object-fit:cover; border-radius:4px; display:bl
 }
 .btn-excluir:hover{ background:#b3452f; color:#fff; }
 
+.btn-vencedor{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:10.5px;
+  text-transform:uppercase;
+  background:transparent;
+  color:var(--verde);
+  border:1px solid var(--verde);
+  border-radius:6px;
+  padding:6px 10px;
+  cursor:pointer;
+  white-space:nowrap;
+}
+.btn-vencedor:hover{ background:var(--verde); color:#fff; }
+.btn-vencedor.marcado{ background:#d9a441; border-color:#d9a441; color:#1c2418; font-weight:700; }
+.btn-vencedor.marcado:hover{ opacity:0.85; }
+tr.linha-vencedora{ background:rgba(217,164,65,0.15); }
+tr.linha-vencedora:hover{ background:rgba(217,164,65,0.22); }
+
 .estado{
   text-align:center;
   padding:60px 20px;
@@ -264,8 +282,8 @@ td img{ width:44px; height:56px; object-fit:cover; border-radius:4px; display:bl
   </div>
 
   <div class="tabs oculto-banca" id="tabs">
-    <button class="tab-btn" data-tab="participantes" onclick="mudarTab('participantes')">PARTICIPANTES</button>
     <button class="tab-btn ativa" data-tab="banca" onclick="mudarTab('banca')">BANCA</button>
+    <button class="tab-btn" data-tab="participantes" onclick="mudarTab('participantes')">PARTICIPANTES</button>
   </div>
 
   <div class="tab-conteudo" id="tab-participantes">
@@ -291,7 +309,7 @@ td img{ width:44px; height:56px; object-fit:cover; border-radius:4px; display:bl
       <table id="tabela" style="display:none;">
         <thead>
           <tr>
-            <th>Foto</th><th>Código</th><th>Nome</th><th>Empresa</th><th>Telefone</th><th>Ação</th>
+            <th>Foto</th><th>Código</th><th>Nome</th><th>Empresa</th><th>Telefone</th><th>Vencedor</th><th>Ação</th>
           </tr>
         </thead>
         <tbody id="tbody"></tbody>
@@ -377,16 +395,19 @@ td img{ width:44px; height:56px; object-fit:cover; border-radius:4px; display:bl
         return;
       }
 
-      document.getElementById('tbody').innerHTML = dados.map(row => `
-        <tr>
+      document.getElementById('tbody').innerHTML = dados.map(row => {
+        const vencedor = row['Vencedor'] === 'Sim';
+        return `
+        <tr class="${vencedor ? 'linha-vencedora' : ''}">
           <td>${row.FotoURL ? `<img src="${row.FotoURL}" alt="${row['Código']}" onclick="abrirLightbox('${row.FotoURL}')">` : '—'}</td>
           <td>${row['Código'] || ''}</td>
           <td>${row['Nome'] || ''}</td>
           <td>${badge(row['Empresa'])}</td>
           <td>${row['Telefone'] || ''}</td>
+          <td><button class="btn-vencedor ${vencedor ? 'marcado' : ''}" onclick="alternarVencedor('${row['Código']}', ${!vencedor})">${vencedor ? '🏆 Vencedor' : 'Marcar vencedor'}</button></td>
           <td><button class="btn-excluir" onclick="excluirParticipante('${row['Código']}', '${(row['Nome'] || '').replace(/'/g, "\\'")}')">Excluir</button></td>
         </tr>
-      `).join('');
+      `;}).join('');
 
       estado.style.display = 'none';
       tabela.style.display = 'table';
@@ -481,6 +502,26 @@ td img{ width:44px; height:56px; object-fit:cover; border-radius:4px; display:bl
       console.error(err);
     }
   });
+
+  async function alternarVencedor(codigo, vencedor) {
+    try {
+      const resp = await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ tipo: 'vencedor', senha: SENHA_ADMIN, codigo, vencedor })
+      });
+      const resultado = await resp.json();
+
+      if (resultado.erro) {
+        alert('Erro: ' + resultado.erro);
+        return;
+      }
+      carregarParticipantes();
+    } catch (err) {
+      alert('Não foi possível atualizar agora.');
+      console.error(err);
+    }
+  }
 
   async function excluirParticipante(codigo, nome) {
     if (!confirm(`Excluir ${nome} (${codigo})? Essa ação não pode ser desfeita.`)) return;
