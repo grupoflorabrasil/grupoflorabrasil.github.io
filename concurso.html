@@ -384,7 +384,7 @@ td img{ width:44px; height:56px; object-fit:cover; border-radius:4px; display:bl
   const MODO_BANCA = params.get('modo') === 'banca';
 
   // Mesma URL do Web App usada em Code.gs
-  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwxR-Y-dd0Q381qFHOtm2AL1ZOg9UJw8g-N--_TIwHPq1fIW8t-3YOvjz445tscc_KT/exec';
+  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyasJUypqIc4NWNnV22IDxyLf7KWiriXKF4jgXmyztW2W2Hh6bEJVwx2TNFp3pIToIE/exec';
   // Precisa bater com a propriedade SENHA_CONCURSO no Apps Script.
   const SENHA_ADMIN = '1996';
 
@@ -619,7 +619,7 @@ td img{ width:44px; height:56px; object-fit:cover; border-radius:4px; display:bl
       const resultado = await resp.json();
 
       if (resultado.erro) {
-        alert('Erro: ' + resultado.erro);
+        alert('Erro: ' + resultado.erro + '\nProcurado: "' + resultado.procurado + '"\nExistentes: ' + JSON.stringify(resultado.existentes));
         return;
       }
       carregarParticipantes();
