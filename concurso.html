@@ -9,7 +9,6 @@
 
 :root{
   --ink:#12140f;
-  --ink-soft:#1a1d16;
   --verde:#007038;
   --azul:#0f1e9b;
   --paper:#f5f1e2;
@@ -17,7 +16,6 @@
   --mist:#a3ab9c;
   --text-on-paper:#1c2418;
   --text-muted-on-paper:#6b6355;
-  --line:rgba(245,241,226,0.12);
 }
 *{box-sizing:border-box;}
 body{
@@ -28,16 +26,13 @@ body{
   font-family:'Inter',sans-serif;
   padding:40px 24px 80px;
 }
-.wrap{
-  width:100%;
-  max-width:1040px;
-  margin:0 auto;
-}
+.wrap{ width:100%; max-width:1080px; margin:0 auto; }
+
 .top-bar{
   display:flex;
   align-items:center;
   justify-content:space-between;
-  margin-bottom:28px;
+  margin-bottom:20px;
 }
 .voltar{
   font-family:'IBM Plex Mono',monospace;
@@ -50,29 +45,51 @@ body{
 }
 .voltar:hover{ border-color: var(--paper); color: var(--paper); }
 
-.page-header{
-  text-align:center;
-  margin-bottom:36px;
-  padding-bottom:24px;
-  border-bottom:3px solid transparent;
-  border-image:linear-gradient(90deg, var(--verde), var(--azul)) 1;
-}
 .page-header h1{
   font-family:'Fraunces',serif;
   font-style:italic;
   font-weight:500;
-  font-size:30px;
+  font-size:34px;
   margin:0;
   letter-spacing:-0.5px;
 }
 .page-header .sub{
   font-family:'IBM Plex Mono',monospace;
-  font-size:11px;
-  text-transform:uppercase;
-  letter-spacing:1.2px;
+  font-size:12px;
   color:var(--mist);
-  margin-top:8px;
+  margin-top:6px;
 }
+
+.tabs{
+  display:flex;
+  gap:28px;
+  margin-top:28px;
+  border-bottom:1px solid rgba(245,241,226,0.15);
+}
+.tab-btn{
+  background:none;
+  border:none;
+  color:var(--mist);
+  font-family:'IBM Plex Mono',monospace;
+  font-size:13px;
+  font-weight:600;
+  letter-spacing:0.5px;
+  padding:0 0 14px;
+  cursor:pointer;
+  position:relative;
+}
+.tab-btn.ativa{ color:var(--paper); }
+.tab-btn.ativa::after{
+  content:'';
+  position:absolute;
+  left:0; right:0; bottom:-1px;
+  height:2px;
+}
+.tab-btn[data-tab="participantes"].ativa::after{ background:var(--verde); }
+.tab-btn[data-tab="banca"].ativa::after{ background:var(--azul); }
+
+.tab-conteudo{ display:none; padding-top:28px; }
+.tab-conteudo.ativa{ display:block; }
 
 .card{
   background:var(--paper);
@@ -81,52 +98,6 @@ body{
   box-shadow:0 2px 6px rgba(0,0,0,0.25);
   overflow:hidden;
 }
-
-table{ width:100%; border-collapse:collapse; }
-thead th{
-  text-align:left;
-  font-family:'IBM Plex Mono',monospace;
-  font-size:11px;
-  text-transform:uppercase;
-  letter-spacing:0.5px;
-  color:var(--text-muted-on-paper);
-  padding:14px 16px;
-  border-bottom:1px solid rgba(28,36,24,0.15);
-}
-tbody td{
-  padding:12px 16px;
-  border-bottom:1px solid rgba(28,36,24,0.08);
-  font-size:14px;
-  vertical-align:middle;
-}
-tbody tr:last-child td{ border-bottom:none; }
-tbody tr:hover{ background: rgba(0,112,56,0.05); }
-
-td img{
-  width:44px; height:56px; object-fit:cover; border-radius:4px; display:block;
-}
-.badge{
-  display:inline-block;
-  padding:3px 10px;
-  border-radius:999px;
-  font-family:'IBM Plex Mono',monospace;
-  font-size:10.5px;
-  letter-spacing:0.3px;
-  color:#fff;
-}
-.badge-flora{ background:var(--verde); }
-.badge-esg{ background:var(--azul); }
-.badge-outra{ background:#6b6355; }
-
-.estado{
-  text-align:center;
-  padding:60px 20px;
-  color:var(--text-muted-on-paper);
-  font-family:'IBM Plex Mono',monospace;
-  font-size:12.5px;
-}
-.estado.erro{ color:#b3452f; }
-
 .form-card{
   background:var(--paper);
   color:var(--text-on-paper);
@@ -178,6 +149,49 @@ td img{
   color:var(--text-muted-on-paper);
 }
 
+table{ width:100%; border-collapse:collapse; }
+thead th{
+  text-align:left;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:0.5px;
+  color:var(--text-muted-on-paper);
+  padding:14px 16px;
+  border-bottom:1px solid rgba(28,36,24,0.15);
+}
+tbody td{
+  padding:12px 16px;
+  border-bottom:1px solid rgba(28,36,24,0.08);
+  font-size:14px;
+  vertical-align:middle;
+}
+tbody tr:last-child td{ border-bottom:none; }
+tbody tr:hover{ background: rgba(0,112,56,0.05); }
+td img{ width:44px; height:56px; object-fit:cover; border-radius:4px; display:block; cursor:zoom-in; }
+
+.badge{
+  display:inline-block;
+  padding:3px 10px;
+  border-radius:999px;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:10.5px;
+  letter-spacing:0.3px;
+  color:#fff;
+}
+.badge-flora{ background:var(--verde); }
+.badge-esg{ background:var(--azul); }
+.badge-outra{ background:#6b6355; }
+
+.estado{
+  text-align:center;
+  padding:60px 20px;
+  color:var(--text-muted-on-paper);
+  font-family:'IBM Plex Mono',monospace;
+  font-size:12.5px;
+}
+.estado.erro{ color:#b3452f; }
+
 .lightbox{
   display:none;
   position:fixed; inset:0;
@@ -190,114 +204,115 @@ td img{
 }
 .lightbox.aberto{ display:flex; }
 .lightbox img{ max-width:90vw; max-height:90vh; border-radius:8px; box-shadow:0 10px 40px rgba(0,0,0,0.5); }
-td img{ cursor:zoom-in; }
 
-.seletor-card{
+.seletor-jurado{
+  max-width:420px;
+  margin:0 0 28px;
   background:var(--paper);
   color:var(--text-on-paper);
   border-radius:8px;
+  padding:18px 20px;
   box-shadow:0 2px 6px rgba(0,0,0,0.25);
-  padding:22px 24px;
-  margin-bottom:24px;
 }
-.seletor-card h2{
-  font-family:'Fraunces',serif;
-  font-style:italic;
-  font-weight:500;
-  font-size:19px;
-  margin:0 0 16px;
+.seletor-jurado label{
+  display:block;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:0.5px;
+  color:var(--text-muted-on-paper);
+  margin-bottom:10px;
 }
-.seletor-linha{
-  display:flex;
-  gap:10px;
-  flex-wrap:wrap;
-  align-items:center;
-}
-.seletor-linha select, .seletor-linha input{
+.seletor-jurado select{
+  width:100%;
   font-family:'Inter',sans-serif;
-  font-size:14px;
+  font-size:15px;
   padding:10px 12px;
   border-radius:6px;
   border:1px solid rgba(28,36,24,0.2);
   background:#fff;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(190px, 1fr));
+  gap:18px;
+}
+.grid.travado{ opacity:0.35; pointer-events:none; }
+.foto-card{
+  background:var(--paper);
   color:var(--text-on-paper);
+  border-radius:8px;
+  box-shadow:0 2px 6px rgba(0,0,0,0.25);
+  overflow:hidden;
 }
-.seletor-linha select{ min-width:220px; }
-.seletor-linha button{
-  font-family:'IBM Plex Mono',monospace;
-  font-size:12px;
-  text-transform:uppercase;
-  background:var(--verde);
-  color:#fff;
-  border:none;
-  padding:10px 16px;
-  border-radius:6px;
-  cursor:pointer;
-}
-.seletor-linha button.secundario{ background:var(--azul); }
-.link-banca{
-  margin-top:14px;
-  display:none;
-  align-items:center;
-  gap:10px;
-  font-family:'IBM Plex Mono',monospace;
-  font-size:12px;
-}
-.link-banca input{
-  flex:1;
-  background:var(--paper-dim);
-  border:1px solid rgba(28,36,24,0.15);
-  padding:8px 10px;
-  border-radius:6px;
-  font-family:'IBM Plex Mono',monospace;
-  font-size:11.5px;
-}
-.trocar-concurso{
+.foto-card .foto{
+  width:100%;
+  aspect-ratio:3/4;
+  background:#0000 center/cover no-repeat, var(--paper);
+  display:flex; align-items:center; justify-content:center;
+  color:var(--text-muted-on-paper);
   font-family:'IBM Plex Mono',monospace;
   font-size:11px;
-  color:var(--mist);
-  text-decoration:underline;
-  cursor:pointer;
-  background:none;
-  border:none;
-  padding:0;
+  cursor:zoom-in;
 }
-.oculto{ display:none !important; }
+.foto-card .codigo{
+  font-family:'IBM Plex Mono',monospace;
+  font-weight:600;
+  font-size:13px;
+  text-align:center;
+  padding:12px 12px 8px;
+  border-top:1px solid rgba(28,36,24,0.12);
+}
+.foto-card .nota-area{ padding:0 12px 14px; display:flex; gap:8px; }
+.foto-card .nota-area input{
+  width:100%;
+  font-family:'Inter',sans-serif;
+  font-size:14px;
+  padding:8px 10px;
+  border-radius:6px;
+  border:1px solid rgba(28,36,24,0.2);
+  text-align:center;
+}
+.foto-card .nota-area button{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:11px;
+  text-transform:uppercase;
+  background:var(--azul);
+  color:#fff;
+  border:none;
+  border-radius:6px;
+  padding:0 12px;
+  cursor:pointer;
+  white-space:nowrap;
+}
+.foto-card .nota-status{
+  padding:0 12px 12px;
+  font-family:'IBM Plex Mono',monospace;
+  font-size:10.5px;
+  color:var(--text-muted-on-paper);
+  min-height:14px;
+}
 </style>
 </head>
 <body>
 
 <div class="wrap">
   <div class="top-bar">
-    <a class="voltar" href="index.html">← Voltar</a>
+    <a class="voltar oculto-banca" href="index.html">← Voltar</a>
   </div>
 
   <div class="page-header">
     <h1>Concurso</h1>
-    <div class="sub" id="subtitulo">Dados completos — acesso restrito</div>
+    <div class="sub" id="subtitulo">carregando…</div>
   </div>
 
-  <div class="seletor-card">
-    <h2>Qual concurso você quer gerenciar?</h2>
-    <div class="seletor-linha">
-      <select id="select-concurso">
-        <option value="">Carregando concursos...</option>
-      </select>
-      <span>ou</span>
-      <input id="novo-concurso" placeholder="Nome de um concurso novo">
-      <button onclick="criarNovoConcurso()">Criar</button>
-      <button class="secundario" onclick="usarConcursoSelecionado()">Usar este</button>
-    </div>
-    <div id="link-banca" class="link-banca">
-      <span>Link da banca:</span>
-      <input id="link-banca-input" readonly>
-      <button onclick="copiarLinkBanca()">Copiar</button>
-    </div>
+  <div class="tabs oculto-banca" id="tabs">
+    <button class="tab-btn ativa" data-tab="participantes" onclick="mudarTab('participantes')">PARTICIPANTES</button>
+    <button class="tab-btn" data-tab="banca" onclick="mudarTab('banca')">BANCA</button>
   </div>
 
-  <div id="area-concurso" class="oculto">
-    <button class="trocar-concurso" onclick="trocarConcurso()" style="margin-bottom:16px;">← trocar de concurso</button>
-
+  <div class="tab-conteudo ativa" id="tab-participantes">
     <div class="form-card">
       <h2>Adicionar participante</h2>
       <form id="form-novo">
@@ -321,13 +336,28 @@ td img{ cursor:zoom-in; }
         <thead>
           <tr>
             <th>Foto</th><th>Código</th><th>Nome</th><th>Empresa</th><th>Telefone</th>
-            <th>Jurado 1</th><th>Jurado 2</th><th>Jurado 3</th><th>Jurado 4</th><th>Total</th>
+            <th>Dani</th><th>Natália</th><th>Renata</th><th>Victor</th><th>Total</th>
           </tr>
         </thead>
         <tbody id="tbody"></tbody>
       </table>
-      <div id="estado" class="estado">Carregando…</div>
+      <div id="estado-participantes" class="estado">Carregando…</div>
     </div>
+  </div>
+
+  <div class="tab-conteudo" id="tab-banca">
+    <div class="seletor-jurado">
+      <label>Quem está avaliando?</label>
+      <select id="select-jurado">
+        <option value="">Selecione...</option>
+        <option>Dani</option>
+        <option>Natália</option>
+        <option>Renata</option>
+        <option>Victor</option>
+      </select>
+    </div>
+    <div id="grid" class="grid travado"></div>
+    <div id="estado-banca" class="estado">Carregando fotos…</div>
   </div>
 </div>
 
@@ -336,17 +366,29 @@ td img{ cursor:zoom-in; }
 </div>
 
 <script>
-  // Guarda de acesso — segue o mesmo padrão das outras páginas do painel
-  if (sessionStorage.getItem('acesso_concurso') !== 'ok') {
-    window.location.href = 'index.html';
-  }
+  const params = new URLSearchParams(window.location.search);
+  const MODO_BANCA = params.get('modo') === 'banca';
 
   // Mesma URL do Web App usada em Code.gs
-  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyZwiWg-lCFtCS1komzwk_8fQWflGzTZFA21xo6Ybjvg1Fr2gaTyeVhdm0FelIFQ7_e/exec';
+  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby1vEbI6PdUt-GW6VOLa-CZ8sr8akD_FtEbXW8yMEgGFDlsyf82KZgwCq70Gc0Wp341/exec';
   // Precisa bater com a propriedade SENHA_CONCURSO no Apps Script.
   const SENHA_ADMIN = '1996';
 
-  let concursoAtual = null;
+  if (MODO_BANCA) {
+    // Link público pra banca — sem senha, sem aba Participantes visível.
+    document.querySelectorAll('.oculto-banca').forEach(el => el.style.display = 'none');
+    mudarTab('banca');
+  } else {
+    // Acesso normal (admin) — segue o mesmo padrão das outras páginas do painel.
+    if (sessionStorage.getItem('acesso_concurso') !== 'ok') {
+      window.location.href = 'index.html';
+    }
+  }
+
+  function mudarTab(nome) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('ativa', b.dataset.tab === nome));
+    document.querySelectorAll('.tab-conteudo').forEach(c => c.classList.toggle('ativa', c.id === 'tab-' + nome));
+  }
 
   function badge(empresa) {
     if (!empresa) return '';
@@ -367,72 +409,12 @@ td img{ cursor:zoom-in; }
     document.getElementById('lightbox').classList.remove('aberto');
   }
 
-  async function carregarListaConcursos() {
-    const select = document.getElementById('select-concurso');
-    try {
-      const resp = await fetch(`${APPS_SCRIPT_URL}?action=listarConcursos&senha=${encodeURIComponent(SENHA_ADMIN)}`);
-      const nomes = await resp.json();
-
-      if (nomes.erro) {
-        select.innerHTML = `<option value="">Erro: ${nomes.erro}</option>`;
-        return;
-      }
-      if (!Array.isArray(nomes) || nomes.length === 0) {
-        select.innerHTML = `<option value="">Nenhum concurso ainda — crie um ao lado</option>`;
-        return;
-      }
-      select.innerHTML = nomes.map(n => `<option value="${n}">${n}</option>`).join('');
-    } catch (err) {
-      select.innerHTML = `<option value="">Não foi possível carregar</option>`;
-      console.error(err);
-    }
-  }
-
-  function criarNovoConcurso() {
-    const nome = document.getElementById('novo-concurso').value.trim();
-    if (!nome) return;
-    concursoAtual = nome;
-    ativarConcurso();
-  }
-
-  function usarConcursoSelecionado() {
-    const nome = document.getElementById('select-concurso').value;
-    if (!nome) return;
-    concursoAtual = nome;
-    ativarConcurso();
-  }
-
-  function ativarConcurso() {
-    document.getElementById('subtitulo').textContent = concursoAtual + ' — acesso restrito';
-    document.getElementById('area-concurso').classList.remove('oculto');
-
-    const linkBanca = new URL('concurso-banca.html', window.location.href);
-    linkBanca.searchParams.set('concurso', concursoAtual);
-    document.getElementById('link-banca-input').value = linkBanca.href;
-    document.getElementById('link-banca').style.display = 'flex';
-
-    carregar();
-  }
-
-  function trocarConcurso() {
-    concursoAtual = null;
-    document.getElementById('area-concurso').classList.add('oculto');
-    document.getElementById('link-banca').style.display = 'none';
-    document.getElementById('subtitulo').textContent = 'Dados completos — acesso restrito';
-    carregarListaConcursos();
-  }
-
-  function copiarLinkBanca() {
-    const input = document.getElementById('link-banca-input');
-    input.select();
-    navigator.clipboard.writeText(input.value);
-  }
-
-  async function carregar() {
-    const estado = document.getElementById('estado');
+  async function carregarParticipantes() {
+    if (MODO_BANCA) return; // banca não carrega essa aba
+    const estado = document.getElementById('estado-participantes');
     const tabela = document.getElementById('tabela');
     try {
-      const resp = await fetch(`${APPS_SCRIPT_URL}?action=admin&senha=${encodeURIComponent(SENHA_ADMIN)}&concurso=${encodeURIComponent(concursoAtual)}`);
+      const resp = await fetch(`${APPS_SCRIPT_URL}?action=admin&senha=${encodeURIComponent(SENHA_ADMIN)}`);
       const dados = await resp.json();
 
       if (dados.erro) {
@@ -440,8 +422,11 @@ td img{ cursor:zoom-in; }
         estado.classList.add('erro');
         return;
       }
+
+      document.getElementById('subtitulo').textContent = dados.length + ' participante(s) cadastrado(s)';
+
       if (!Array.isArray(dados) || dados.length === 0) {
-        estado.textContent = 'Nenhum participante cadastrado ainda neste concurso.';
+        estado.textContent = 'Nenhum participante cadastrado ainda.';
         tabela.style.display = 'none';
         estado.style.display = 'block';
         return;
@@ -454,10 +439,10 @@ td img{ cursor:zoom-in; }
           <td>${row['Nome'] || ''}</td>
           <td>${badge(row['Empresa'])}</td>
           <td>${row['Telefone'] || ''}</td>
-          <td>${row['Nota_Jurado1'] !== '' && row['Nota_Jurado1'] !== undefined ? row['Nota_Jurado1'] : '—'}</td>
-          <td>${row['Nota_Jurado2'] !== '' && row['Nota_Jurado2'] !== undefined ? row['Nota_Jurado2'] : '—'}</td>
-          <td>${row['Nota_Jurado3'] !== '' && row['Nota_Jurado3'] !== undefined ? row['Nota_Jurado3'] : '—'}</td>
-          <td>${row['Nota_Jurado4'] !== '' && row['Nota_Jurado4'] !== undefined ? row['Nota_Jurado4'] : '—'}</td>
+          <td>${row['Nota_Dani'] !== '' && row['Nota_Dani'] !== undefined ? row['Nota_Dani'] : '—'}</td>
+          <td>${row['Nota_Natália'] !== '' && row['Nota_Natália'] !== undefined ? row['Nota_Natália'] : '—'}</td>
+          <td>${row['Nota_Renata'] !== '' && row['Nota_Renata'] !== undefined ? row['Nota_Renata'] : '—'}</td>
+          <td>${row['Nota_Victor'] !== '' && row['Nota_Victor'] !== undefined ? row['Nota_Victor'] : '—'}</td>
           <td><strong>${row['NotaTotal'] !== '' && row['NotaTotal'] !== undefined ? row['NotaTotal'] : '—'}</strong></td>
         </tr>
       `).join('');
@@ -470,6 +455,88 @@ td img{ cursor:zoom-in; }
       console.error(err);
     }
   }
+
+  async function carregarBanca() {
+    const estado = document.getElementById('estado-banca');
+    const grid = document.getElementById('grid');
+    try {
+      const resp = await fetch(`${APPS_SCRIPT_URL}?action=banca`);
+      const dados = await resp.json();
+
+      if (!Array.isArray(dados) || dados.length === 0) {
+        estado.textContent = 'Nenhuma foto cadastrada ainda.';
+        return;
+      }
+
+      if (MODO_BANCA) {
+        document.getElementById('subtitulo').textContent = dados.length + ' participante(s) pra avaliar';
+      }
+
+      estado.style.display = 'none';
+      grid.innerHTML = dados.map(item => `
+        <div class="foto-card">
+          <div class="foto" style="${item.foto ? `background-image:url('${item.foto}')` : ''}" onclick="abrirLightbox('${item.foto || ''}')">
+            ${item.foto ? '' : 'sem foto'}
+          </div>
+          <div class="codigo">${item.codigo}</div>
+          <div class="nota-area">
+            <input type="number" min="0" max="10" step="0.5" placeholder="Nota 0-10" data-codigo="${item.codigo}">
+            <button onclick="salvarNota('${item.codigo}', this)">Salvar</button>
+          </div>
+          <div class="nota-status" data-status="${item.codigo}"></div>
+        </div>
+      `).join('');
+    } catch (err) {
+      estado.textContent = 'Não foi possível carregar as fotos agora.';
+      console.error(err);
+    }
+  }
+
+  async function salvarNota(codigo, botao) {
+    const jurado = document.getElementById('select-jurado').value;
+    const input = document.querySelector(`input[data-codigo="${codigo}"]`);
+    const status = document.querySelector(`[data-status="${codigo}"]`);
+    const nota = input.value;
+
+    if (!jurado) {
+      status.textContent = 'Selecione o jurado primeiro.';
+      return;
+    }
+    if (nota === '' || Number(nota) < 0 || Number(nota) > 10) {
+      status.textContent = 'Nota precisa ser entre 0 e 10.';
+      return;
+    }
+
+    botao.disabled = true;
+    status.textContent = 'Salvando…';
+
+    try {
+      const resp = await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ tipo: 'nota', codigo, jurado, nota: Number(nota) })
+      });
+      const resultado = await resp.json();
+
+      if (resultado.erro) {
+        status.textContent = 'Erro: ' + resultado.erro;
+        botao.disabled = false;
+        return;
+      }
+      status.textContent = 'Nota salva!';
+      botao.disabled = false;
+    } catch (err) {
+      status.textContent = 'Não foi possível salvar agora.';
+      botao.disabled = false;
+      console.error(err);
+    }
+  }
+
+  document.getElementById('select-jurado').addEventListener('change', function () {
+    const grid = document.getElementById('grid');
+    if (this.value) grid.classList.remove('travado');
+    else grid.classList.add('travado');
+  });
 
   function lerComoBase64(file) {
     return new Promise((resolve, reject) => {
@@ -497,7 +564,6 @@ td img{ cursor:zoom-in; }
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify({
           senha: SENHA_ADMIN,
-          concurso: concursoAtual,
           codigo: document.getElementById('f-codigo').value,
           nome: document.getElementById('f-nome').value,
           empresa: document.getElementById('f-empresa').value,
@@ -517,7 +583,8 @@ td img{ cursor:zoom-in; }
       status.textContent = 'Participante adicionado!';
       ev.target.reset();
       botao.disabled = false;
-      carregar();
+      carregarParticipantes();
+      carregarBanca();
     } catch (err) {
       status.textContent = 'Não foi possível enviar agora.';
       botao.disabled = false;
@@ -525,7 +592,8 @@ td img{ cursor:zoom-in; }
     }
   });
 
-  carregarListaConcursos();
+  carregarParticipantes();
+  carregarBanca();
 </script>
 </body>
 </html>
