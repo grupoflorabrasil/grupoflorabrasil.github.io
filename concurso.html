@@ -183,6 +183,20 @@ td img{ width:44px; height:56px; object-fit:cover; border-radius:4px; display:bl
 .badge-esg{ background:var(--azul); }
 .badge-outra{ background:#6b6355; }
 
+.btn-excluir{
+  font-family:'IBM Plex Mono',monospace;
+  font-size:10.5px;
+  text-transform:uppercase;
+  background:transparent;
+  color:#b3452f;
+  border:1px solid #b3452f;
+  border-radius:6px;
+  padding:6px 10px;
+  cursor:pointer;
+  white-space:nowrap;
+}
+.btn-excluir:hover{ background:#b3452f; color:#fff; }
+
 .estado{
   text-align:center;
   padding:60px 20px;
@@ -336,7 +350,7 @@ td img{ width:44px; height:56px; object-fit:cover; border-radius:4px; display:bl
         <thead>
           <tr>
             <th>Foto</th><th>Código</th><th>Nome</th><th>Empresa</th><th>Telefone</th>
-            <th>Dani</th><th>Natália</th><th>Renata</th><th>Victor</th><th>Total</th>
+            <th>Dani</th><th>Natália</th><th>Renata</th><th>Victor</th><th>Total</th><th>Ação</th>
           </tr>
         </thead>
         <tbody id="tbody"></tbody>
@@ -370,7 +384,7 @@ td img{ width:44px; height:56px; object-fit:cover; border-radius:4px; display:bl
   const MODO_BANCA = params.get('modo') === 'banca';
 
   // Mesma URL do Web App usada em Code.gs
-  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyiDPC1bAYJPxQHN8uUUZr-ttSkgBg0gEn4JR-iUTNhgnzGfd2grGWx7VsInlMZqj3m/exec';
+  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwxR-Y-dd0Q381qFHOtm2AL1ZOg9UJw8g-N--_TIwHPq1fIW8t-3YOvjz445tscc_KT/exec';
   // Precisa bater com a propriedade SENHA_CONCURSO no Apps Script.
   const SENHA_ADMIN = '1996';
 
@@ -444,6 +458,7 @@ td img{ width:44px; height:56px; object-fit:cover; border-radius:4px; display:bl
           <td>${row['Nota_Renata'] !== '' && row['Nota_Renata'] !== undefined ? row['Nota_Renata'] : '—'}</td>
           <td>${row['Nota_Victor'] !== '' && row['Nota_Victor'] !== undefined ? row['Nota_Victor'] : '—'}</td>
           <td><strong>${row['NotaTotal'] !== '' && row['NotaTotal'] !== undefined ? row['NotaTotal'] : '—'}</strong></td>
+          <td><button class="btn-excluir" onclick="excluirParticipante('${row['Código']}', '${(row['Nome'] || '').replace(/'/g, "\\'")}')">Excluir</button></td>
         </tr>
       `).join('');
 
@@ -591,6 +606,29 @@ td img{ width:44px; height:56px; object-fit:cover; border-radius:4px; display:bl
       console.error(err);
     }
   });
+
+  async function excluirParticipante(codigo, nome) {
+    if (!confirm(`Excluir ${nome} (${codigo})? Essa ação não pode ser desfeita.`)) return;
+
+    try {
+      const resp = await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+        body: JSON.stringify({ tipo: 'excluir', senha: SENHA_ADMIN, codigo })
+      });
+      const resultado = await resp.json();
+
+      if (resultado.erro) {
+        alert('Erro: ' + resultado.erro);
+        return;
+      }
+      carregarParticipantes();
+      carregarBanca();
+    } catch (err) {
+      alert('Não foi possível excluir agora.');
+      console.error(err);
+    }
+  }
 
   carregarParticipantes();
   carregarBanca();
