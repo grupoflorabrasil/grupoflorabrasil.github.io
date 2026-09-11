@@ -219,40 +219,11 @@ td img{ width:44px; height:56px; object-fit:cover; border-radius:4px; display:bl
 .lightbox.aberto{ display:flex; }
 .lightbox img{ max-width:90vw; max-height:90vh; border-radius:8px; box-shadow:0 10px 40px rgba(0,0,0,0.5); }
 
-.seletor-jurado{
-  max-width:420px;
-  margin:0 0 28px;
-  background:var(--paper);
-  color:var(--text-on-paper);
-  border-radius:8px;
-  padding:18px 20px;
-  box-shadow:0 2px 6px rgba(0,0,0,0.25);
-}
-.seletor-jurado label{
-  display:block;
-  font-family:'IBM Plex Mono',monospace;
-  font-size:11px;
-  text-transform:uppercase;
-  letter-spacing:0.5px;
-  color:var(--text-muted-on-paper);
-  margin-bottom:10px;
-}
-.seletor-jurado select{
-  width:100%;
-  font-family:'Inter',sans-serif;
-  font-size:15px;
-  padding:10px 12px;
-  border-radius:6px;
-  border:1px solid rgba(28,36,24,0.2);
-  background:#fff;
-}
-
 .grid{
   display:grid;
   grid-template-columns:repeat(auto-fill, minmax(190px, 1fr));
   gap:18px;
 }
-.grid.travado{ opacity:0.35; pointer-events:none; }
 .foto-card{
   background:var(--paper);
   color:var(--text-on-paper);
@@ -275,37 +246,8 @@ td img{ width:44px; height:56px; object-fit:cover; border-radius:4px; display:bl
   font-weight:600;
   font-size:13px;
   text-align:center;
-  padding:12px 12px 8px;
+  padding:12px;
   border-top:1px solid rgba(28,36,24,0.12);
-}
-.foto-card .nota-area{ padding:0 12px 14px; display:flex; gap:8px; }
-.foto-card .nota-area input{
-  width:100%;
-  font-family:'Inter',sans-serif;
-  font-size:14px;
-  padding:8px 10px;
-  border-radius:6px;
-  border:1px solid rgba(28,36,24,0.2);
-  text-align:center;
-}
-.foto-card .nota-area button{
-  font-family:'IBM Plex Mono',monospace;
-  font-size:11px;
-  text-transform:uppercase;
-  background:var(--azul);
-  color:#fff;
-  border:none;
-  border-radius:6px;
-  padding:0 12px;
-  cursor:pointer;
-  white-space:nowrap;
-}
-.foto-card .nota-status{
-  padding:0 12px 12px;
-  font-family:'IBM Plex Mono',monospace;
-  font-size:10.5px;
-  color:var(--text-muted-on-paper);
-  min-height:14px;
 }
 </style>
 </head>
@@ -349,8 +291,7 @@ td img{ width:44px; height:56px; object-fit:cover; border-radius:4px; display:bl
       <table id="tabela" style="display:none;">
         <thead>
           <tr>
-            <th>Foto</th><th>Código</th><th>Nome</th><th>Empresa</th><th>Telefone</th>
-            <th>Dani</th><th>Natália</th><th>Renata</th><th>Victor</th><th>Total</th><th>Ação</th>
+            <th>Foto</th><th>Código</th><th>Nome</th><th>Empresa</th><th>Telefone</th><th>Ação</th>
           </tr>
         </thead>
         <tbody id="tbody"></tbody>
@@ -360,17 +301,7 @@ td img{ width:44px; height:56px; object-fit:cover; border-radius:4px; display:bl
   </div>
 
   <div class="tab-conteudo ativa" id="tab-banca">
-    <div class="seletor-jurado">
-      <label>Quem está avaliando?</label>
-      <select id="select-jurado">
-        <option value="">Selecione...</option>
-        <option>Dani</option>
-        <option>Natália</option>
-        <option>Renata</option>
-        <option>Victor</option>
-      </select>
-    </div>
-    <div id="grid" class="grid travado"></div>
+    <div id="grid" class="grid"></div>
     <div id="estado-banca" class="estado">Carregando fotos…</div>
   </div>
 </div>
@@ -384,7 +315,7 @@ td img{ width:44px; height:56px; object-fit:cover; border-radius:4px; display:bl
   const MODO_BANCA = params.get('modo') === 'banca';
 
   // Mesma URL do Web App usada em Code.gs
-  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyasJUypqIc4NWNnV22IDxyLf7KWiriXKF4jgXmyztW2W2Hh6bEJVwx2TNFp3pIToIE/exec';
+  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby3FHWDuosWFppT8mX5ogC5fnsG1AmqK9dz16ueAEDamMGBDw-59ENwEvL8Huzi5ouR/exec';
   // Precisa bater com a propriedade SENHA_CONCURSO no Apps Script.
   const SENHA_ADMIN = '1996';
 
@@ -453,11 +384,6 @@ td img{ width:44px; height:56px; object-fit:cover; border-radius:4px; display:bl
           <td>${row['Nome'] || ''}</td>
           <td>${badge(row['Empresa'])}</td>
           <td>${row['Telefone'] || ''}</td>
-          <td>${row['Nota_Dani'] !== '' && row['Nota_Dani'] !== undefined ? row['Nota_Dani'] : '—'}</td>
-          <td>${row['Nota_Natália'] !== '' && row['Nota_Natália'] !== undefined ? row['Nota_Natália'] : '—'}</td>
-          <td>${row['Nota_Renata'] !== '' && row['Nota_Renata'] !== undefined ? row['Nota_Renata'] : '—'}</td>
-          <td>${row['Nota_Victor'] !== '' && row['Nota_Victor'] !== undefined ? row['Nota_Victor'] : '—'}</td>
-          <td><strong>${row['NotaTotal'] !== '' && row['NotaTotal'] !== undefined ? row['NotaTotal'] : '—'}</strong></td>
           <td><button class="btn-excluir" onclick="excluirParticipante('${row['Código']}', '${(row['Nome'] || '').replace(/'/g, "\\'")}')">Excluir</button></td>
         </tr>
       `).join('');
@@ -494,11 +420,6 @@ td img{ width:44px; height:56px; object-fit:cover; border-radius:4px; display:bl
             ${item.foto ? '' : 'sem foto'}
           </div>
           <div class="codigo">${item.codigo}</div>
-          <div class="nota-area">
-            <input type="number" min="0" max="10" step="0.5" placeholder="Nota 0-10" data-codigo="${item.codigo}">
-            <button onclick="salvarNota('${item.codigo}', this)">Salvar</button>
-          </div>
-          <div class="nota-status" data-status="${item.codigo}"></div>
         </div>
       `).join('');
     } catch (err) {
@@ -506,52 +427,6 @@ td img{ width:44px; height:56px; object-fit:cover; border-radius:4px; display:bl
       console.error(err);
     }
   }
-
-  async function salvarNota(codigo, botao) {
-    const jurado = document.getElementById('select-jurado').value;
-    const input = document.querySelector(`input[data-codigo="${codigo}"]`);
-    const status = document.querySelector(`[data-status="${codigo}"]`);
-    const nota = input.value;
-
-    if (!jurado) {
-      status.textContent = 'Selecione o jurado primeiro.';
-      return;
-    }
-    if (nota === '' || Number(nota) < 0 || Number(nota) > 10) {
-      status.textContent = 'Nota precisa ser entre 0 e 10.';
-      return;
-    }
-
-    botao.disabled = true;
-    status.textContent = 'Salvando…';
-
-    try {
-      const resp = await fetch(APPS_SCRIPT_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-        body: JSON.stringify({ tipo: 'nota', codigo, jurado, nota: Number(nota) })
-      });
-      const resultado = await resp.json();
-
-      if (resultado.erro) {
-        status.textContent = 'Erro: ' + resultado.erro;
-        botao.disabled = false;
-        return;
-      }
-      status.textContent = 'Nota salva!';
-      botao.disabled = false;
-    } catch (err) {
-      status.textContent = 'Não foi possível salvar agora.';
-      botao.disabled = false;
-      console.error(err);
-    }
-  }
-
-  document.getElementById('select-jurado').addEventListener('change', function () {
-    const grid = document.getElementById('grid');
-    if (this.value) grid.classList.remove('travado');
-    else grid.classList.add('travado');
-  });
 
   function lerComoBase64(file) {
     return new Promise((resolve, reject) => {
