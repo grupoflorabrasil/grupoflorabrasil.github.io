@@ -232,7 +232,7 @@
 
       <div class="zona-arquivo" id="zonaArquivo">
         <strong id="zonaTitulo">Clique aqui ou arraste o arquivo</strong>
-        <span id="zonaAjuda">Vídeo (MP4, MOV, WEBM) ou imagem (JPG, PNG, WEBP)</span>
+        <span id="zonaAjuda">Vídeo ou imagem, até 30 MB por envio</span>
       </div>
       <input type="file" id="arquivo" accept="video/*,image/*" style="display:none">
       <div class="barra" id="barra" style="display:none"><i id="barraInterna"></i></div>
@@ -316,9 +316,8 @@ var API = 'https://script.google.com/macros/s/AKfycbxo7Ijxw8TmHxZWJW1CsntAUm6IZN
 // Chave que o script confere. Não é a senha do painel, a pessoa não digita nada.
 var CHAVE = 'flora2026';
 
-var PEDACO = 8 * 1024 * 1024;      // 8 MB por pedaço no envio direto
-var PEDACO_RESERVA = 3 * 1024 * 1024; // 3 MB no caminho reserva
-var LIMITE_RESERVA = 45 * 1024 * 1024; // caminho reserva só vale até 45 MB
+// Tamanho máximo por envio pela página. Acima disso, subir direto no Drive.
+var LIMITE = 30 * 1024 * 1024;
 
 var videos = [];
 var arquivoEscolhido = null;
@@ -513,118 +512,43 @@ function fechar(id){
 
 // ---------- ENVIO ----------
 
-function pedir(corpo){
-  return fetch(API, {
-    method: 'POST',
-    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-    body: JSON.stringify(corpo)
-  }).then(function(r){ return r.json(); });
-}
-
 function progresso(fracao){
   el('barra').style.display = 'block';
   el('barraInterna').style.width = Math.max(1, Math.min(100, fracao * 100)).toFixed(1) + '%';
 }
 
-/** Envia um pedaço direto para o Drive, na sessão aberta pelo Apps Script. */
-function enviarPedacoDireto(urlSessao, pedaco, inicio, fim, total, aoProgredir){
-  return new Promise(function(resolve, reject){
-    var xhr = new XMLHttpRequest();
-    xhr.open('PUT', urlSessao, true);
-    xhr.setRequestHeader('Content-Range', 'bytes ' + inicio + '-' + (fim - 1) + '/' + total);
-    xhr.upload.onprogress = function(e){
-      if(e.lengthComputable && aoProgredir) aoProgredir(inicio + e.loaded);
-    };
-    xhr.onload = function(){
-      resolve({ status: xhr.status, texto: xhr.responseText, faixa: xhr.getResponseHeader('Range') });
-    };
-    xhr.onerror = function(){ reject(new Error('rede')); };
-    xhr.send(pedaco);
-  });
-}
-
-function enviarDireto(arquivo, senha){
-  return pedir({ action: 'iniciarUpload', senha: senha, nome: arquivo.name, tipo: arquivo.type || 'application/octet-stream', tamanho: arquivo.size })
-    .then(function(r){
-      if(!r.ok) throw new Error(r.erro || 'Não consegui abrir o envio no Drive.');
-      var urlSessao = r.urlSessao;
-      var posicao = 0;
-
-      function proximo(){
-        if(posicao >= arquivo.size) return Promise.reject(new Error('O Drive não confirmou o arquivo.'));
-        var fim = Math.min(posicao + PEDACO, arquivo.size);
-        var pedaco = arquivo.slice(posicao, fim);
-        return enviarPedacoDireto(urlSessao, pedaco, posicao, fim, arquivo.size, function(enviados){
-          progresso(enviados / arquivo.size);
-        }).then(function(res){
-          if(res.status === 200 || res.status === 201){
-            progresso(1);
-            var corpo = {};
-            try { corpo = JSON.parse(res.texto); } catch(e){}
-            if(!corpo.id) throw new Error('O Drive não devolveu o identificador do arquivo.');
-            return corpo.id;
-          }
-          if(res.status === 308 || res.status === 202){
-            if(res.faixa){
-              var partes = res.faixa.split('-');
-              posicao = parseInt(partes[partes.length - 1], 10) + 1;
-            } else {
-              posicao = fim;
-            }
-            progresso(posicao / arquivo.size);
-            return proximo();
-          }
-          throw new Error('O Drive recusou o envio (código ' + res.status + ').');
-        });
-      }
-      return proximo();
-    });
-}
-
-/** Caminho reserva: o arquivo passa pelo Apps Script, em pedaços menores. */
-function enviarPeloScript(arquivo, senha){
-  if(arquivo.size > LIMITE_RESERVA){
-    return Promise.reject(new Error(
-      'O envio direto para o Drive falhou e este arquivo é grande demais para o caminho reserva. '
-      + 'Suba o arquivo manualmente na pasta do Drive e peça para cadastrar pelo link.'
-    ));
-  }
-  var uploadId = 'u' + Date.now();
-  var total = Math.ceil(arquivo.size / PEDACO_RESERVA);
-  var indice = 0;
-
-  function proximo(){
-    if(indice >= total){
-      return pedir({ action: 'juntarPedacos', senha: senha, uploadId: uploadId, total: total, nome: arquivo.name, tipo: arquivo.type || 'video/mp4' })
-        .then(function(r){
-          if(!r.ok) throw new Error(r.erro || 'Não consegui juntar os pedaços.');
-          progresso(1);
-          return r.arquivoId;
-        });
-    }
-    var inicio = indice * PEDACO_RESERVA;
-    var pedaco = arquivo.slice(inicio, Math.min(inicio + PEDACO_RESERVA, arquivo.size));
-    return lerBase64(pedaco).then(function(base64){
-      return pedir({ action: 'enviarPedaco', senha: senha, uploadId: uploadId, indice: indice, conteudo: base64 });
-    }).then(function(r){
-      if(!r.ok) throw new Error(r.erro || 'Falha ao enviar um pedaço do arquivo.');
-      indice++;
-      progresso(indice / (total + 1));
-      return proximo();
-    });
-  }
-  return proximo();
-}
-
-function lerBase64(pedaco){
+function lerBase64(arquivo){
   return new Promise(function(resolve, reject){
     var leitor = new FileReader();
+    leitor.onprogress = function(e){
+      if(e.lengthComputable) progresso((e.loaded / e.total) * 0.25);
+    };
     leitor.onload = function(){
       var texto = String(leitor.result);
       resolve(texto.substring(texto.indexOf(',') + 1));
     };
     leitor.onerror = function(){ reject(new Error('Não consegui ler o arquivo.')); };
-    leitor.readAsDataURL(pedaco);
+    leitor.readAsDataURL(arquivo);
+  });
+}
+
+function postar(corpo){
+  return new Promise(function(resolve, reject){
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', API, true);
+    xhr.setRequestHeader('Content-Type', 'text/plain;charset=utf-8');
+    xhr.upload.onprogress = function(e){
+      if(e.lengthComputable) progresso(0.25 + (e.loaded / e.total) * 0.7);
+    };
+    xhr.onload = function(){
+      try {
+        resolve(JSON.parse(xhr.responseText));
+      } catch(erro){
+        reject(new Error('O script respondeu algo inesperado. Confira se a implantação está publicada na versão nova.'));
+      }
+    };
+    xhr.onerror = function(){ reject(new Error('Não consegui falar com o script. Verifique a conexão e o endereço do app.')); };
+    xhr.send(JSON.stringify(corpo));
   });
 }
 
@@ -635,28 +559,27 @@ function enviar(){
   }
   if(!arquivoEscolhido){ recado('Escolha o arquivo.', 'erro'); return; }
   if(!el('titulo').value.trim()){ recado('Dê um título ao arquivo.', 'erro'); return; }
+  if(arquivoEscolhido.size > LIMITE){
+    recado('Este arquivo tem ' + tamanhoLegivel(arquivoEscolhido.size)
+      + ' e o limite por envio é ' + tamanhoLegivel(LIMITE)
+      + '. Suba ele direto na pasta do Drive e cadastre depois.', 'erro');
+    return;
+  }
 
-  var senha = CHAVE;
   var botao = el('btnEnviar');
   botao.disabled = true;
   botao.textContent = 'Enviando...';
   recado('Enviando o arquivo. Mantenha esta aba aberta até o fim.', 'espera');
   progresso(0.01);
 
-  enviarDireto(arquivoEscolhido, senha)
-    .catch(function(erro){
-      if(String(erro.message) === 'rede'){
-        recado('O envio direto não passou. Tentando pelo caminho reserva.', 'espera');
-        return enviarPeloScript(arquivoEscolhido, senha);
-      }
-      throw erro;
-    })
-    .then(function(arquivoId){
-      recado('Arquivo no Drive. Registrando na planilha.', 'espera');
-      return pedir({
-        action: 'registrar',
-        senha: senha,
-        arquivoId: arquivoId,
+  lerBase64(arquivoEscolhido)
+    .then(function(base64){
+      return postar({
+        action: 'enviar',
+        chave: CHAVE,
+        conteudo: base64,
+        nome: arquivoEscolhido.name,
+        tipo: arquivoEscolhido.type || 'application/octet-stream',
         titulo: el('titulo').value.trim(),
         descricao: el('descricao').value.trim(),
         marca: el('marca').value,
@@ -664,13 +587,12 @@ function enviar(){
         formato: el('formato').value,
         dataDoVideo: el('dataDoVideo').value,
         tags: el('tags').value.trim(),
-        enviadoPor: el('enviadoPor').value.trim(),
-        tamanho: arquivoEscolhido.size,
-        tipo: arquivoEscolhido.type
+        enviadoPor: el('enviadoPor').value.trim()
       });
     })
     .then(function(r){
-      if(!r.ok) throw new Error(r.erro || 'Não consegui registrar na planilha.');
+      if(!r.ok) throw new Error(r.erro || 'O script não conseguiu salvar o arquivo.');
+      progresso(1);
       recado('Arquivo enviado e cadastrado.', 'certo');
       limparFormulario();
       carregar();
@@ -693,7 +615,7 @@ function limparFormulario(){
   el('descricao').value = '';
   el('tags').value = '';
   el('zonaTitulo').textContent = 'Clique aqui ou arraste o arquivo';
-  el('zonaAjuda').textContent = 'Vídeo (MP4, MOV, WEBM) ou imagem (JPG, PNG, WEBP)';
+  el('zonaAjuda').textContent = 'Vídeo ou imagem, até 30 MB por envio';
   el('barra').style.display = 'none';
   el('barraInterna').style.width = '0';
 }
