@@ -9,7 +9,7 @@
   }
 </script>
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Banco de Vídeos | Grupo Flora Brasil</title>
+<title>Banco de Vídeos e Imagens | Grupo Flora Brasil</title>
 <style>
   :root{
     --fundo:#0e1116;
@@ -157,6 +157,7 @@
   .recado.certo{display:block;background:#12251a;border:1px solid #1f5231;color:#92dba9}
   .recado.espera{display:block;background:#241d0d;border:1px solid #574406;color:#e6c97a}
   .player iframe{width:100%;aspect-ratio:16/9;border:0;background:#000;display:block}
+  .player img{width:100%;max-height:72vh;object-fit:contain;background:#000;display:block}
   .detalhes{padding:18px 20px;display:flex;flex-direction:column;gap:10px}
   .detalhes dl{display:grid;grid-template-columns:120px 1fr;gap:7px 14px;margin:0;font-size:13px}
   .detalhes dt{color:var(--texto2)}
@@ -179,18 +180,23 @@
       <span style="background:var(--ciclo)"></span>
     </div>
     <div>
-      <h1>Banco de Vídeos</h1>
+      <h1>Banco de Vídeos e Imagens</h1>
       <p>Grupo Flora Brasil</p>
     </div>
   </div>
   <div class="vago"></div>
   <button class="btn" id="btnAtualizar">Atualizar</button>
-  <button class="btn btn-principal" id="btnAbrirCadastro">Enviar vídeo</button>
+  <button class="btn btn-principal" id="btnAbrirCadastro">Enviar arquivo</button>
 </header>
 
 <main>
   <div class="filtros">
     <input class="busca" id="busca" type="search" placeholder="Buscar por título, descrição ou tag">
+    <select id="filtroMidia">
+      <option value="">Vídeos e imagens</option>
+      <option value="video">Só vídeos</option>
+      <option value="image">Só imagens</option>
+    </select>
     <select id="filtroMarca"><option value="">Todas as marcas</option></select>
     <select id="filtroCategoria"><option value="">Todas as categorias</option></select>
     <select id="filtroFormato"><option value="">Todos os formatos</option></select>
@@ -209,7 +215,7 @@
       <h2 id="playerTitulo">Vídeo</h2>
       <button class="fechar" data-fechar="modalPlayer">&times;</button>
     </div>
-    <div class="player"><iframe id="playerFrame" allow="autoplay" allowfullscreen></iframe></div>
+    <div class="player" id="playerMidia"></div>
     <div class="detalhes" id="playerDetalhes"></div>
   </div>
 </div>
@@ -218,7 +224,7 @@
 <div class="fundo-modal" id="modalCadastro">
   <div class="modal">
     <div class="modal-topo">
-      <h2>Enviar vídeo para o banco</h2>
+      <h2>Enviar arquivo para o banco</h2>
       <button class="fechar" data-fechar="modalCadastro">&times;</button>
     </div>
     <div class="modal-corpo">
@@ -226,21 +232,21 @@
 
       <div class="zona-arquivo" id="zonaArquivo">
         <strong id="zonaTitulo">Clique aqui ou arraste o arquivo</strong>
-        <span id="zonaAjuda">MP4, MOV, WEBM ou AVI</span>
+        <span id="zonaAjuda">Vídeo (MP4, MOV, WEBM) ou imagem (JPG, PNG, WEBP)</span>
       </div>
-      <input type="file" id="arquivo" accept="video/*" style="display:none">
+      <input type="file" id="arquivo" accept="video/*,image/*" style="display:none">
       <div class="barra" id="barra" style="display:none"><i id="barraInterna"></i></div>
 
       <div style="height:18px"></div>
 
       <div class="campo">
-        <label for="titulo">Título do vídeo</label>
+        <label for="titulo">Título</label>
         <input id="titulo" type="text" placeholder="Ex: Institucional Viveiro Flora Brasil 2026">
       </div>
 
       <div class="campo">
         <label for="descricao">Descrição</label>
-        <textarea id="descricao" placeholder="Para que serve, onde foi usado, o que aparece no vídeo"></textarea>
+        <textarea id="descricao" placeholder="Para que serve, onde foi usado, o que aparece"></textarea>
       </div>
 
       <div class="dupla">
@@ -264,6 +270,8 @@
             <option>Evento</option>
             <option>Depoimento</option>
             <option>Bruto / material cru</option>
+            <option>Foto de produto</option>
+            <option>Banco de imagem</option>
           </select>
         </div>
       </div>
@@ -278,7 +286,7 @@
           </select>
         </div>
         <div class="campo">
-          <label for="dataDoVideo">Data do vídeo</label>
+          <label for="dataDoVideo">Data</label>
           <input id="dataDoVideo" type="date">
         </div>
       </div>
@@ -294,11 +302,6 @@
         </div>
       </div>
 
-      <div class="campo">
-        <label for="senha">Senha de cadastro</label>
-        <input id="senha" type="password" placeholder="Senha do time de marketing">
-      </div>
-
       <button class="btn btn-principal" id="btnEnviar" style="width:100%;padding:12px">Enviar para o banco</button>
     </div>
   </div>
@@ -309,6 +312,9 @@
 // Cole aqui a URL do app do Apps Script (termina com /exec)
 var API = 'https://script.google.com/macros/s/AKfycbxo7Ijxw8TmHxZWJW1CsntAUm6IZNTnqAuZu17NJY72LZrWkUeOKE4JwSN-4EpZ5Hgafw/exec';
 // ========================================================
+
+// Chave que o script confere. Não é a senha do painel, a pessoa não digita nada.
+var CHAVE = 'flora2026';
 
 var PEDACO = 8 * 1024 * 1024;      // 8 MB por pedaço no envio direto
 var PEDACO_RESERVA = 3 * 1024 * 1024; // 3 MB no caminho reserva
@@ -332,6 +338,13 @@ function tamanhoLegivel(bytes){
   if(bytes < 1048576) return (bytes/1024).toFixed(0) + ' KB';
   if(bytes < 1073741824) return (bytes/1048576).toFixed(1) + ' MB';
   return (bytes/1073741824).toFixed(2) + ' GB';
+}
+
+function ehVideo(v){
+  var tipo = String(v.TipoArquivo || '').toLowerCase();
+  if(tipo.indexOf('video') === 0) return true;
+  if(tipo.indexOf('image') === 0) return false;
+  return !/\.(jpg|jpeg|png|webp|gif|heic|tiff?|bmp)$/i.test(String(v.Titulo || ''));
 }
 
 function classeMarca(marca){
@@ -399,7 +412,11 @@ function filtrados(){
   var categoria = el('filtroCategoria').value;
   var formato = el('filtroFormato').value;
 
+  var midia = el('filtroMidia').value;
+
   return videos.filter(function(v){
+    if(midia === 'video' && !ehVideo(v)) return false;
+    if(midia === 'image' && ehVideo(v)) return false;
     if(marca && v.Marca !== marca) return false;
     if(categoria && v.Categoria !== categoria) return false;
     if(formato && v.Formato !== formato) return false;
@@ -413,13 +430,13 @@ function filtrados(){
 
 function desenhar(){
   var lista = filtrados();
-  el('contador').textContent = lista.length + (lista.length === 1 ? ' vídeo' : ' vídeos')
+  el('contador').textContent = lista.length + (lista.length === 1 ? ' item' : ' itens')
     + (lista.length !== videos.length ? ' de ' + videos.length : '');
 
   if(!lista.length){
     el('area').innerHTML = videos.length
-      ? '<div class="vazio"><strong>Nenhum vídeo com esses filtros</strong>Tente limpar a busca ou trocar a marca.</div>'
-      : '<div class="vazio"><strong>O banco está vazio</strong>Clique em "Enviar vídeo" para subir o primeiro.</div>';
+      ? '<div class="vazio"><strong>Nada com esses filtros</strong>Tente limpar a busca ou trocar a marca.</div>'
+      : '<div class="vazio"><strong>O banco está vazio</strong>Clique em "Enviar arquivo" para subir o primeiro.</div>';
     return;
   }
 
@@ -430,7 +447,7 @@ function desenhar(){
     html += '<article class="cartao">'
       + '<div class="capa" data-abrir="' + escapar(v.ID) + '">'
       +   '<img src="' + capa + '" alt="" loading="lazy" onerror="this.style.display=\'none\'">'
-      +   '<div class="play">&#9654;</div>'
+      +   (ehVideo(v) ? '<div class="play">&#9654;</div>' : '')
       + '</div>'
       + '<div class="corpo">'
       +   '<h3>' + escapar(v.Titulo) + '</h3>'
@@ -467,7 +484,13 @@ function abrirPlayer(id){
   if(!v) return;
 
   el('playerTitulo').textContent = v.Titulo;
-  el('playerFrame').src = 'https://drive.google.com/file/d/' + encodeURIComponent(v.ArquivoID) + '/preview';
+  if(ehVideo(v)){
+    el('playerMidia').innerHTML = '<iframe id="playerFrame" allow="autoplay" allowfullscreen src="https://drive.google.com/file/d/'
+      + encodeURIComponent(v.ArquivoID) + '/preview"></iframe>';
+  } else {
+    el('playerMidia').innerHTML = '<img alt="" src="https://drive.google.com/thumbnail?id='
+      + encodeURIComponent(v.ArquivoID) + '&sz=w1600">';
+  }
   el('playerDetalhes').innerHTML = '<dl>'
     + (v.Descricao ? '<dt>Descrição</dt><dd>' + escapar(v.Descricao) + '</dd>' : '')
     + '<dt>Marca</dt><dd>' + escapar(v.Marca || '-') + '</dd>'
@@ -485,7 +508,7 @@ function abrirPlayer(id){
 function abrir(id){ el(id).classList.add('aberto'); }
 function fechar(id){
   el(id).classList.remove('aberto');
-  if(id === 'modalPlayer') el('playerFrame').src = '';
+  if(id === 'modalPlayer') el('playerMidia').innerHTML = '';
 }
 
 // ---------- ENVIO ----------
@@ -521,7 +544,7 @@ function enviarPedacoDireto(urlSessao, pedaco, inicio, fim, total, aoProgredir){
 }
 
 function enviarDireto(arquivo, senha){
-  return pedir({ action: 'iniciarUpload', senha: senha, nome: arquivo.name, tipo: arquivo.type || 'video/mp4', tamanho: arquivo.size })
+  return pedir({ action: 'iniciarUpload', senha: senha, nome: arquivo.name, tipo: arquivo.type || 'application/octet-stream', tamanho: arquivo.size })
     .then(function(r){
       if(!r.ok) throw new Error(r.erro || 'Não consegui abrir o envio no Drive.');
       var urlSessao = r.urlSessao;
@@ -563,7 +586,7 @@ function enviarPeloScript(arquivo, senha){
   if(arquivo.size > LIMITE_RESERVA){
     return Promise.reject(new Error(
       'O envio direto para o Drive falhou e este arquivo é grande demais para o caminho reserva. '
-      + 'Suba o vídeo manualmente na pasta do Drive e me chame para cadastrar pelo link.'
+      + 'Suba o arquivo manualmente na pasta do Drive e peça para cadastrar pelo link.'
     ));
   }
   var uploadId = 'u' + Date.now();
@@ -610,11 +633,10 @@ function enviar(){
     recado('Falta colar a URL do Apps Script na variável API, no início do script desta página.', 'erro');
     return;
   }
-  if(!arquivoEscolhido){ recado('Escolha o arquivo de vídeo.', 'erro'); return; }
-  if(!el('titulo').value.trim()){ recado('Dê um título ao vídeo.', 'erro'); return; }
-  if(!el('senha').value){ recado('Digite a senha de cadastro.', 'erro'); return; }
+  if(!arquivoEscolhido){ recado('Escolha o arquivo.', 'erro'); return; }
+  if(!el('titulo').value.trim()){ recado('Dê um título ao arquivo.', 'erro'); return; }
 
-  var senha = el('senha').value;
+  var senha = CHAVE;
   var botao = el('btnEnviar');
   botao.disabled = true;
   botao.textContent = 'Enviando...';
@@ -649,7 +671,7 @@ function enviar(){
     })
     .then(function(r){
       if(!r.ok) throw new Error(r.erro || 'Não consegui registrar na planilha.');
-      recado('Vídeo enviado e cadastrado.', 'certo');
+      recado('Arquivo enviado e cadastrado.', 'certo');
       limparFormulario();
       carregar();
       setTimeout(function(){ fechar('modalCadastro'); recado(''); }, 1600);
@@ -671,7 +693,7 @@ function limparFormulario(){
   el('descricao').value = '';
   el('tags').value = '';
   el('zonaTitulo').textContent = 'Clique aqui ou arraste o arquivo';
-  el('zonaAjuda').textContent = 'MP4, MOV, WEBM ou AVI';
+  el('zonaAjuda').textContent = 'Vídeo (MP4, MOV, WEBM) ou imagem (JPG, PNG, WEBP)';
   el('barra').style.display = 'none';
   el('barraInterna').style.width = '0';
 }
@@ -693,6 +715,7 @@ el('btnAtualizar').addEventListener('click', carregar);
 el('btnAbrirCadastro').addEventListener('click', function(){ abrir('modalCadastro'); });
 el('btnEnviar').addEventListener('click', enviar);
 el('busca').addEventListener('input', desenhar);
+el('filtroMidia').addEventListener('change', desenhar);
 el('filtroMarca').addEventListener('change', desenhar);
 el('filtroCategoria').addEventListener('change', desenhar);
 el('filtroFormato').addEventListener('change', desenhar);
