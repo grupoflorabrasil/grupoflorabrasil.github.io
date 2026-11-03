@@ -203,24 +203,17 @@ body{
     <div class="enter-hint">Clique para acessar →</div>
   </div>
 
-  <div class="client-card esg" id="card-esg">
-    <div class="client-label">Área</div>
-    <h2>ESG</h2>
-    <div class="client-desc">Painel de indicadores ESG.</div>
-    <div class="enter-hint">Clique para acessar →</div>
-  </div>
-
-  <div class="client-card esg" id="card-rh">
-    <div class="client-label">Área</div>
-    <h2>RH</h2>
-    <div class="client-desc">Painel de Recursos Humanos.</div>
-    <div class="enter-hint">Clique para acessar →</div>
-  </div>
-
   <div class="client-card esg" id="card-concurso">
     <div class="client-label">Área</div>
     <h2>Concurso</h2>
     <div class="client-desc">Banco de imagens e dados dos participantes.</div>
+    <div class="enter-hint">Clique para acessar →</div>
+  </div>
+
+  <div class="client-card" id="card-videos">
+    <div class="client-label">Área</div>
+    <h2>Banco de Vídeos</h2>
+    <div class="client-desc">Vídeos das três marcas, com busca e envio de novos arquivos.</div>
     <div class="enter-hint">Clique para acessar →</div>
   </div>
 </div>
@@ -241,21 +234,18 @@ body{
 <script>
 const SENHAS = {
   marketing: '1996',
-  esg: '1996',
-  rh: '1996',
-  concurso: '1996'
+  concurso: '1996',
+  videos: '1996'
 };
 const DESTINOS = {
   marketing: 'marketing.html',
-  esg: 'esg.html',
-  rh: 'rh.html',
-  concurso: 'concurso.html'
+  concurso: 'concurso.html',
+  videos: 'banco-videos.html'
 };
 const NOMES = {
   marketing: 'Marketing',
-  esg: 'ESG',
-  rh: 'RH',
-  concurso: 'Concurso'
+  concurso: 'Concurso',
+  videos: 'Banco de Vídeos'
 };
 
 let clienteAtual = null;
@@ -263,14 +253,11 @@ let clienteAtual = null;
 document.getElementById('card-marketing').addEventListener('click', ()=>{
   abrirSenha('marketing');
 });
-document.getElementById('card-esg').addEventListener('click', ()=>{
-  abrirSenha('esg');
-});
-document.getElementById('card-rh').addEventListener('click', ()=>{
-  abrirSenha('rh');
-});
 document.getElementById('card-concurso').addEventListener('click', ()=>{
   abrirSenha('concurso');
+});
+document.getElementById('card-videos').addEventListener('click', ()=>{
+  abrirSenha('videos');
 });
 
 function abrirSenha(cliente){

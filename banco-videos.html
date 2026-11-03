@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<script>
+  // Trava de acesso: se a pessoa não passou pela tela de senha, volta para a home
+  if (sessionStorage.getItem('acesso_videos') !== 'ok') {
+    window.location.href = '/index.html';
+  }
+</script>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Banco de Vídeos | Grupo Flora Brasil</title>
+<style>
+  :root{
+    --fundo:#0e1116;
+    --fundo2:#151a22;
+    --cartao:#1b2129;
+    --borda:#262e39;
+    --texto:#e8edf3;
+    --texto2:#94a3b4;
+    --lotus:#d6187b;
+    --flora:#36a84f;
+    --ciclo:#17a2a2;
+    --aviso:#e0a106;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0;background:var(--fundo);color:var(--texto);
+    font-family:'Segoe UI',system-ui,-apple-system,Roboto,Arial,sans-serif;
+    font-size:15px;line-height:1.5;
+  }
+  a{color:var(--ciclo)}
+  header{
+    background:linear-gradient(90deg,var(--fundo2),#10141a);
+    border-bottom:1px solid var(--borda);
+    padding:22px 28px;display:flex;align-items:center;gap:18px;flex-wrap:wrap;
+  }
+  header .marca{display:flex;align-items:center;gap:12px}
+  header .faixas{display:flex;flex-direction:column;gap:3px}
+  header .faixas span{display:block;width:26px;height:4px;border-radius:2px}
+  h1{font-size:20px;margin:0;font-weight:600;letter-spacing:.3px}
+  header p{margin:2px 0 0;color:var(--texto2);font-size:13px}
+  header .vago{flex:1}
+  .btn{
+    background:var(--cartao);color:var(--texto);border:1px solid var(--borda);
+    padding:9px 16px;border-radius:8px;cursor:pointer;font-size:14px;
+    font-family:inherit;transition:.15s;
+  }
+  .btn:hover{background:#222a34;border-color:#394450}
+  .btn-principal{background:var(--lotus);border-color:var(--lotus);color:#fff;font-weight:600}
+  .btn-principal:hover{background:#b8125f;border-color:#b8125f}
+  .btn-perigo{background:transparent;border-color:#5d2130;color:#e4788f}
+  .btn-perigo:hover{background:#2a1119}
+  main{padding:24px 28px 60px;max-width:1500px;margin:0 auto}
+  .filtros{
+    display:flex;gap:10px;flex-wrap:wrap;align-items:center;
+    background:var(--fundo2);border:1px solid var(--borda);
+    border-radius:12px;padding:14px 16px;margin-bottom:22px;
+  }
+  input,select,textarea{
+    background:var(--cartao);color:var(--texto);border:1px solid var(--borda);
+    border-radius:8px;padding:9px 12px;font-size:14px;font-family:inherit;
+  }
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--lotus)}
+  .busca{flex:1;min-width:220px}
+  .contador{color:var(--texto2);font-size:13px;margin-left:auto}
+  .grade{
+    display:grid;gap:18px;
+    grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+  }
+  .cartao{
+    background:var(--cartao);border:1px solid var(--borda);border-radius:12px;
+    overflow:hidden;display:flex;flex-direction:column;transition:.15s;
+  }
+  .cartao:hover{transform:translateY(-3px);border-color:#3a4654}
+  .capa{
+    position:relative;aspect-ratio:16/9;background:#0b0e13;
+    display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;
+  }
+  .capa img{width:100%;height:100%;object-fit:cover;display:block}
+  .capa .play{
+    position:absolute;width:52px;height:52px;border-radius:50%;
+    background:rgba(214,24,123,.92);display:flex;align-items:center;justify-content:center;
+    font-size:19px;color:#fff;padding-left:4px;
+  }
+  .capa .duracao{
+    position:absolute;right:8px;bottom:8px;background:rgba(0,0,0,.78);
+    padding:2px 7px;border-radius:5px;font-size:12px;color:#dfe6ee;
+  }
+  .corpo{padding:14px 15px 16px;display:flex;flex-direction:column;gap:9px;flex:1}
+  .corpo h3{margin:0;font-size:15px;font-weight:600;line-height:1.35}
+  .corpo .desc{
+    margin:0;color:var(--texto2);font-size:13px;
+    display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;
+  }
+  .etiquetas{display:flex;gap:6px;flex-wrap:wrap}
+  .etiqueta{
+    font-size:11px;padding:3px 9px;border-radius:20px;
+    border:1px solid var(--borda);color:var(--texto2);background:#141a21;
+  }
+  .etiqueta.lotus{border-color:var(--lotus);color:#f28fbd}
+  .etiqueta.flora{border-color:var(--flora);color:#8fd79e}
+  .etiqueta.ciclo{border-color:var(--ciclo);color:#86d6d6}
+  .rodape-cartao{
+    display:flex;align-items:center;gap:10px;margin-top:auto;
+    padding-top:10px;border-top:1px solid var(--borda);
+    font-size:12px;color:var(--texto2);
+  }
+  .rodape-cartao .vago{flex:1}
+  .icone-link{
+    color:var(--texto2);text-decoration:none;padding:4px 7px;border-radius:6px;font-size:13px;
+  }
+  .icone-link:hover{background:#222a34;color:var(--texto)}
+  .vazio{
+    text-align:center;padding:70px 20px;color:var(--texto2);
+    border:1px dashed var(--borda);border-radius:12px;
+  }
+  .vazio strong{display:block;color:var(--texto);font-size:17px;margin-bottom:8px}
+  .fundo-modal{
+    position:fixed;inset:0;background:rgba(5,7,10,.82);display:none;
+    align-items:center;justify-content:center;padding:24px;z-index:50;
+  }
+  .fundo-modal.aberto{display:flex}
+  .modal{
+    background:var(--fundo2);border:1px solid var(--borda);border-radius:14px;
+    width:100%;max-width:560px;max-height:92vh;overflow:auto;
+  }
+  .modal.largo{max-width:980px}
+  .modal-topo{
+    display:flex;align-items:center;gap:12px;padding:16px 20px;
+    border-bottom:1px solid var(--borda);position:sticky;top:0;background:var(--fundo2);
+  }
+  .modal-topo h2{margin:0;font-size:17px;font-weight:600;flex:1}
+  .fechar{
+    background:none;border:none;color:var(--texto2);font-size:24px;
+    cursor:pointer;line-height:1;padding:0 4px;
+  }
+  .fechar:hover{color:var(--texto)}
+  .modal-corpo{padding:20px}
+  .campo{margin-bottom:15px}
+  .campo label{display:block;font-size:13px;color:var(--texto2);margin-bottom:6px}
+  .campo input,.campo select,.campo textarea{width:100%}
+  .campo textarea{min-height:76px;resize:vertical}
+  .dupla{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .zona-arquivo{
+    border:2px dashed var(--borda);border-radius:10px;padding:26px 16px;
+    text-align:center;color:var(--texto2);cursor:pointer;transition:.15s;
+  }
+  .zona-arquivo:hover,.zona-arquivo.sobre{border-color:var(--lotus);background:#1a1420}
+  .zona-arquivo strong{display:block;color:var(--texto);margin-bottom:5px}
+  .barra{height:8px;background:#0c1015;border-radius:5px;overflow:hidden;margin-top:12px}
+  .barra i{display:block;height:100%;width:0;background:var(--lotus);transition:width .2s}
+  .recado{
+    padding:11px 14px;border-radius:8px;font-size:13px;margin-bottom:15px;display:none;
+  }
+  .recado.erro{display:block;background:#2b1219;border:1px solid #5d2130;color:#f0a0b2}
+  .recado.certo{display:block;background:#12251a;border:1px solid #1f5231;color:#92dba9}
+  .recado.espera{display:block;background:#241d0d;border:1px solid #574406;color:#e6c97a}
+  .player iframe{width:100%;aspect-ratio:16/9;border:0;background:#000;display:block}
+  .detalhes{padding:18px 20px;display:flex;flex-direction:column;gap:10px}
+  .detalhes dl{display:grid;grid-template-columns:120px 1fr;gap:7px 14px;margin:0;font-size:13px}
+  .detalhes dt{color:var(--texto2)}
+  .detalhes dd{margin:0}
+  .carregando{text-align:center;padding:60px;color:var(--texto2)}
+  @media(max-width:620px){
+    header,main{padding-left:16px;padding-right:16px}
+    .dupla{grid-template-columns:1fr}
+    .contador{margin-left:0;width:100%}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="marca">
+    <div class="faixas">
+      <span style="background:var(--lotus)"></span>
+      <span style="background:var(--flora)"></span>
+      <span style="background:var(--ciclo)"></span>
+    </div>
+    <div>
+      <h1>Banco de Vídeos</h1>
+      <p>Grupo Flora Brasil</p>
+    </div>
+  </div>
+  <div class="vago"></div>
+  <button class="btn" id="btnAtualizar">Atualizar</button>
+  <button class="btn btn-principal" id="btnAbrirCadastro">Enviar vídeo</button>
+</header>
+
+<main>
+  <div class="filtros">
+    <input class="busca" id="busca" type="search" placeholder="Buscar por título, descrição ou tag">
+    <select id="filtroMarca"><option value="">Todas as marcas</option></select>
+    <select id="filtroCategoria"><option value="">Todas as categorias</option></select>
+    <select id="filtroFormato"><option value="">Todos os formatos</option></select>
+    <span class="contador" id="contador"></span>
+  </div>
+
+  <div id="area">
+    <div class="carregando">Carregando os vídeos...</div>
+  </div>
+</main>
+
+<!-- PLAYER -->
+<div class="fundo-modal" id="modalPlayer">
+  <div class="modal largo">
+    <div class="modal-topo">
+      <h2 id="playerTitulo">Vídeo</h2>
+      <button class="fechar" data-fechar="modalPlayer">&times;</button>
+    </div>
+    <div class="player"><iframe id="playerFrame" allow="autoplay" allowfullscreen></iframe></div>
+    <div class="detalhes" id="playerDetalhes"></div>
+  </div>
+</div>
+
+<!-- CADASTRO -->
+<div class="fundo-modal" id="modalCadastro">
+  <div class="modal">
+    <div class="modal-topo">
+      <h2>Enviar vídeo para o banco</h2>
+      <button class="fechar" data-fechar="modalCadastro">&times;</button>
+    </div>
+    <div class="modal-corpo">
+      <div class="recado" id="recadoCadastro"></div>
+
+      <div class="zona-arquivo" id="zonaArquivo">
+        <strong id="zonaTitulo">Clique aqui ou arraste o arquivo</strong>
+        <span id="zonaAjuda">MP4, MOV, WEBM ou AVI</span>
+      </div>
+      <input type="file" id="arquivo" accept="video/*" style="display:none">
+      <div class="barra" id="barra" style="display:none"><i id="barraInterna"></i></div>
+
+      <div style="height:18px"></div>
+
+      <div class="campo">
+        <label for="titulo">Título do vídeo</label>
+        <input id="titulo" type="text" placeholder="Ex: Institucional Viveiro Flora Brasil 2026">
+      </div>
+
+      <div class="campo">
+        <label for="descricao">Descrição</label>
+        <textarea id="descricao" placeholder="Para que serve, onde foi usado, o que aparece no vídeo"></textarea>
+      </div>
+
+      <div class="dupla">
+        <div class="campo">
+          <label for="marca">Marca</label>
+          <select id="marca">
+            <option>Lótus Soluções Ambientais</option>
+            <option>Viveiro Flora Brasil</option>
+            <option>Novo Ciclo (Terra Vegetal)</option>
+            <option>Grupo Flora Brasil</option>
+          </select>
+        </div>
+        <div class="campo">
+          <label for="categoria">Categoria</label>
+          <select id="categoria">
+            <option>Institucional</option>
+            <option>Produto</option>
+            <option>Campanha</option>
+            <option>Endomarketing</option>
+            <option>Treinamento e segurança</option>
+            <option>Evento</option>
+            <option>Depoimento</option>
+            <option>Bruto / material cru</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="dupla">
+        <div class="campo">
+          <label for="formato">Formato</label>
+          <select id="formato">
+            <option>Vertical (9:16)</option>
+            <option>Horizontal (16:9)</option>
+            <option>Quadrado (1:1)</option>
+          </select>
+        </div>
+        <div class="campo">
+          <label for="dataDoVideo">Data do vídeo</label>
+          <input id="dataDoVideo" type="date">
+        </div>
+      </div>
+
+      <div class="dupla">
+        <div class="campo">
+          <label for="tags">Tags (separadas por vírgula)</label>
+          <input id="tags" type="text" placeholder="reels, maracujá, drone">
+        </div>
+        <div class="campo">
+          <label for="enviadoPor">Enviado por</label>
+          <input id="enviadoPor" type="text" placeholder="Seu nome">
+        </div>
+      </div>
+
+      <div class="campo">
+        <label for="senha">Senha de cadastro</label>
+        <input id="senha" type="password" placeholder="Senha do time de marketing">
+      </div>
+
+      <button class="btn btn-principal" id="btnEnviar" style="width:100%;padding:12px">Enviar para o banco</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===================== CONFIGURAÇÃO =====================
+// Cole aqui a URL do app do Apps Script (termina com /exec)
+var API = 'https://script.google.com/macros/s/AKfycbyUEuxCrAcuhaU5fJvOkyTyHYR28Tp5mkdNaSoVblGwkm3HIarRk_PSt2xYynSNl99H/exec';
+// ========================================================
+
+var PEDACO = 8 * 1024 * 1024;      // 8 MB por pedaço no envio direto
+var PEDACO_RESERVA = 3 * 1024 * 1024; // 3 MB no caminho reserva
+var LIMITE_RESERVA = 45 * 1024 * 1024; // caminho reserva só vale até 45 MB
+
+var videos = [];
+var arquivoEscolhido = null;
+
+function el(id){ return document.getElementById(id); }
+
+function recado(texto, tipo){
+  var caixa = el('recadoCadastro');
+  caixa.className = 'recado' + (tipo ? ' ' + tipo : '');
+  caixa.textContent = texto || '';
+  if(!texto) caixa.className = 'recado';
+}
+
+function tamanhoLegivel(bytes){
+  bytes = Number(bytes) || 0;
+  if(bytes < 1024) return bytes + ' B';
+  if(bytes < 1048576) return (bytes/1024).toFixed(0) + ' KB';
+  if(bytes < 1073741824) return (bytes/1048576).toFixed(1) + ' MB';
+  return (bytes/1073741824).toFixed(2) + ' GB';
+}
+
+function classeMarca(marca){
+  var m = String(marca || '').toLowerCase();
+  if(m.indexOf('lótus') >= 0 || m.indexOf('lotus') >= 0) return 'lotus';
+  if(m.indexOf('viveiro') >= 0 || m.indexOf('flora') >= 0) return 'flora';
+  if(m.indexOf('ciclo') >= 0 || m.indexOf('terra vegetal') >= 0) return 'ciclo';
+  return '';
+}
+
+function escapar(texto){
+  return String(texto == null ? '' : texto)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+// ---------- CARREGAR E DESENHAR ----------
+
+function carregar(){
+  if(API.indexOf('COLE_AQUI') === 0){
+    el('area').innerHTML = '<div class="vazio"><strong>Falta ligar a planilha</strong>'
+      + 'Abra o arquivo banco-videos.html e cole a URL do Apps Script na variável API, no início do script.</div>';
+    return;
+  }
+  el('area').innerHTML = '<div class="carregando">Carregando os vídeos...</div>';
+  fetch(API + '?action=listar')
+    .then(function(r){ return r.json(); })
+    .then(function(dados){
+      if(!dados.ok) throw new Error(dados.erro || 'Erro ao listar');
+      videos = dados.videos || [];
+      montarFiltros();
+      desenhar();
+    })
+    .catch(function(erro){
+      el('area').innerHTML = '<div class="vazio"><strong>Não consegui carregar</strong>'
+        + escapar(erro.message) + '</div>';
+    });
+}
+
+function montarFiltros(){
+  preencher('filtroMarca', 'Marca', 'Todas as marcas');
+  preencher('filtroCategoria', 'Categoria', 'Todas as categorias');
+  preencher('filtroFormato', 'Formato', 'Todos os formatos');
+}
+
+function preencher(idSelect, campo, rotuloVazio){
+  var atual = el(idSelect).value;
+  var valores = [];
+  for(var i = 0; i < videos.length; i++){
+    var v = String(videos[i][campo] || '').trim();
+    if(v && valores.indexOf(v) < 0) valores.push(v);
+  }
+  valores.sort();
+  var html = '<option value="">' + rotuloVazio + '</option>';
+  for(var j = 0; j < valores.length; j++){
+    html += '<option value="' + escapar(valores[j]) + '">' + escapar(valores[j]) + '</option>';
+  }
+  el(idSelect).innerHTML = html;
+  el(idSelect).value = atual;
+}
+
+function filtrados(){
+  var termo = el('busca').value.trim().toLowerCase();
+  var marca = el('filtroMarca').value;
+  var categoria = el('filtroCategoria').value;
+  var formato = el('filtroFormato').value;
+
+  return videos.filter(function(v){
+    if(marca && v.Marca !== marca) return false;
+    if(categoria && v.Categoria !== categoria) return false;
+    if(formato && v.Formato !== formato) return false;
+    if(termo){
+      var alvo = [v.Titulo, v.Descricao, v.Tags, v.EnviadoPor].join(' ').toLowerCase();
+      if(alvo.indexOf(termo) < 0) return false;
+    }
+    return true;
+  });
+}
+
+function desenhar(){
+  var lista = filtrados();
+  el('contador').textContent = lista.length + (lista.length === 1 ? ' vídeo' : ' vídeos')
+    + (lista.length !== videos.length ? ' de ' + videos.length : '');
+
+  if(!lista.length){
+    el('area').innerHTML = videos.length
+      ? '<div class="vazio"><strong>Nenhum vídeo com esses filtros</strong>Tente limpar a busca ou trocar a marca.</div>'
+      : '<div class="vazio"><strong>O banco está vazio</strong>Clique em "Enviar vídeo" para subir o primeiro.</div>';
+    return;
+  }
+
+  var html = '<div class="grade">';
+  for(var i = 0; i < lista.length; i++){
+    var v = lista[i];
+    var capa = 'https://drive.google.com/thumbnail?id=' + encodeURIComponent(v.ArquivoID) + '&sz=w640';
+    html += '<article class="cartao">'
+      + '<div class="capa" data-abrir="' + escapar(v.ID) + '">'
+      +   '<img src="' + capa + '" alt="" loading="lazy" onerror="this.style.display=\'none\'">'
+      +   '<div class="play">&#9654;</div>'
+      + '</div>'
+      + '<div class="corpo">'
+      +   '<h3>' + escapar(v.Titulo) + '</h3>'
+      +   (v.Descricao ? '<p class="desc">' + escapar(v.Descricao) + '</p>' : '')
+      +   '<div class="etiquetas">'
+      +     (v.Marca ? '<span class="etiqueta ' + classeMarca(v.Marca) + '">' + escapar(v.Marca) + '</span>' : '')
+      +     (v.Categoria ? '<span class="etiqueta">' + escapar(v.Categoria) + '</span>' : '')
+      +     (v.Formato ? '<span class="etiqueta">' + escapar(v.Formato) + '</span>' : '')
+      +   '</div>'
+      +   '<div class="rodape-cartao">'
+      +     '<span>' + escapar(v.DataDoVideo || v.CriadoEm || '') + '</span>'
+      +     '<span>' + tamanhoLegivel(v.Tamanho) + '</span>'
+      +     '<span class="vago"></span>'
+      +     '<a class="icone-link" href="' + escapar(v.LinkDrive) + '" target="_blank" rel="noopener" title="Abrir no Drive">Drive</a>'
+      +     '<a class="icone-link" href="https://drive.google.com/uc?export=download&id=' + encodeURIComponent(v.ArquivoID) + '" title="Baixar">Baixar</a>'
+      +   '</div>'
+      + '</div>'
+      + '</article>';
+  }
+  html += '</div>';
+  el('area').innerHTML = html;
+
+  var capas = document.querySelectorAll('[data-abrir]');
+  for(var c = 0; c < capas.length; c++){
+    capas[c].addEventListener('click', function(){
+      abrirPlayer(this.getAttribute('data-abrir'));
+    });
+  }
+}
+
+function abrirPlayer(id){
+  var v = null;
+  for(var i = 0; i < videos.length; i++){ if(videos[i].ID === id) v = videos[i]; }
+  if(!v) return;
+
+  el('playerTitulo').textContent = v.Titulo;
+  el('playerFrame').src = 'https://drive.google.com/file/d/' + encodeURIComponent(v.ArquivoID) + '/preview';
+  el('playerDetalhes').innerHTML = '<dl>'
+    + (v.Descricao ? '<dt>Descrição</dt><dd>' + escapar(v.Descricao) + '</dd>' : '')
+    + '<dt>Marca</dt><dd>' + escapar(v.Marca || '-') + '</dd>'
+    + '<dt>Categoria</dt><dd>' + escapar(v.Categoria || '-') + '</dd>'
+    + '<dt>Formato</dt><dd>' + escapar(v.Formato || '-') + '</dd>'
+    + '<dt>Data</dt><dd>' + escapar(v.DataDoVideo || '-') + '</dd>'
+    + '<dt>Tags</dt><dd>' + escapar(v.Tags || '-') + '</dd>'
+    + '<dt>Tamanho</dt><dd>' + tamanhoLegivel(v.Tamanho) + '</dd>'
+    + '<dt>Enviado por</dt><dd>' + escapar(v.EnviadoPor || '-') + '</dd>'
+    + '<dt>No banco desde</dt><dd>' + escapar(v.CriadoEm || '-') + '</dd>'
+    + '</dl>';
+  abrir('modalPlayer');
+}
+
+function abrir(id){ el(id).classList.add('aberto'); }
+function fechar(id){
+  el(id).classList.remove('aberto');
+  if(id === 'modalPlayer') el('playerFrame').src = '';
+}
+
+// ---------- ENVIO ----------
+
+function pedir(corpo){
+  return fetch(API, {
+    method: 'POST',
+    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify(corpo)
+  }).then(function(r){ return r.json(); });
+}
+
+function progresso(fracao){
+  el('barra').style.display = 'block';
+  el('barraInterna').style.width = Math.max(1, Math.min(100, fracao * 100)).toFixed(1) + '%';
+}
+
+/** Envia um pedaço direto para o Drive, na sessão aberta pelo Apps Script. */
+function enviarPedacoDireto(urlSessao, pedaco, inicio, fim, total, aoProgredir){
+  return new Promise(function(resolve, reject){
+    var xhr = new XMLHttpRequest();
+    xhr.open('PUT', urlSessao, true);
+    xhr.setRequestHeader('Content-Range', 'bytes ' + inicio + '-' + (fim - 1) + '/' + total);
+    xhr.upload.onprogress = function(e){
+      if(e.lengthComputable && aoProgredir) aoProgredir(inicio + e.loaded);
+    };
+    xhr.onload = function(){
+      resolve({ status: xhr.status, texto: xhr.responseText, faixa: xhr.getResponseHeader('Range') });
+    };
+    xhr.onerror = function(){ reject(new Error('rede')); };
+    xhr.send(pedaco);
+  });
+}
+
+function enviarDireto(arquivo, senha){
+  return pedir({ action: 'iniciarUpload', senha: senha, nome: arquivo.name, tipo: arquivo.type || 'video/mp4', tamanho: arquivo.size })
+    .then(function(r){
+      if(!r.ok) throw new Error(r.erro || 'Não consegui abrir o envio no Drive.');
+      var urlSessao = r.urlSessao;
+      var posicao = 0;
+
+      function proximo(){
+        if(posicao >= arquivo.size) return Promise.reject(new Error('O Drive não confirmou o arquivo.'));
+        var fim = Math.min(posicao + PEDACO, arquivo.size);
+        var pedaco = arquivo.slice(posicao, fim);
+        return enviarPedacoDireto(urlSessao, pedaco, posicao, fim, arquivo.size, function(enviados){
+          progresso(enviados / arquivo.size);
+        }).then(function(res){
+          if(res.status === 200 || res.status === 201){
+            progresso(1);
+            var corpo = {};
+            try { corpo = JSON.parse(res.texto); } catch(e){}
+            if(!corpo.id) throw new Error('O Drive não devolveu o identificador do arquivo.');
+            return corpo.id;
+          }
+          if(res.status === 308 || res.status === 202){
+            if(res.faixa){
+              var partes = res.faixa.split('-');
+              posicao = parseInt(partes[partes.length - 1], 10) + 1;
+            } else {
+              posicao = fim;
+            }
+            progresso(posicao / arquivo.size);
+            return proximo();
+          }
+          throw new Error('O Drive recusou o envio (código ' + res.status + ').');
+        });
+      }
+      return proximo();
+    });
+}
+
+/** Caminho reserva: o arquivo passa pelo Apps Script, em pedaços menores. */
+function enviarPeloScript(arquivo, senha){
+  if(arquivo.size > LIMITE_RESERVA){
+    return Promise.reject(new Error(
+      'O envio direto para o Drive falhou e este arquivo é grande demais para o caminho reserva. '
+      + 'Suba o vídeo manualmente na pasta do Drive e me chame para cadastrar pelo link.'
+    ));
+  }
+  var uploadId = 'u' + Date.now();
+  var total = Math.ceil(arquivo.size / PEDACO_RESERVA);
+  var indice = 0;
+
+  function proximo(){
+    if(indice >= total){
+      return pedir({ action: 'juntarPedacos', senha: senha, uploadId: uploadId, total: total, nome: arquivo.name, tipo: arquivo.type || 'video/mp4' })
+        .then(function(r){
+          if(!r.ok) throw new Error(r.erro || 'Não consegui juntar os pedaços.');
+          progresso(1);
+          return r.arquivoId;
+        });
+    }
+    var inicio = indice * PEDACO_RESERVA;
+    var pedaco = arquivo.slice(inicio, Math.min(inicio + PEDACO_RESERVA, arquivo.size));
+    return lerBase64(pedaco).then(function(base64){
+      return pedir({ action: 'enviarPedaco', senha: senha, uploadId: uploadId, indice: indice, conteudo: base64 });
+    }).then(function(r){
+      if(!r.ok) throw new Error(r.erro || 'Falha ao enviar um pedaço do arquivo.');
+      indice++;
+      progresso(indice / (total + 1));
+      return proximo();
+    });
+  }
+  return proximo();
+}
+
+function lerBase64(pedaco){
+  return new Promise(function(resolve, reject){
+    var leitor = new FileReader();
+    leitor.onload = function(){
+      var texto = String(leitor.result);
+      resolve(texto.substring(texto.indexOf(',') + 1));
+    };
+    leitor.onerror = function(){ reject(new Error('Não consegui ler o arquivo.')); };
+    leitor.readAsDataURL(pedaco);
+  });
+}
+
+function enviar(){
+  if(API.indexOf('COLE_AQUI') === 0){
+    recado('Falta colar a URL do Apps Script na variável API, no início do script desta página.', 'erro');
+    return;
+  }
+  if(!arquivoEscolhido){ recado('Escolha o arquivo de vídeo.', 'erro'); return; }
+  if(!el('titulo').value.trim()){ recado('Dê um título ao vídeo.', 'erro'); return; }
+  if(!el('senha').value){ recado('Digite a senha de cadastro.', 'erro'); return; }
+
+  var senha = el('senha').value;
+  var botao = el('btnEnviar');
+  botao.disabled = true;
+  botao.textContent = 'Enviando...';
+  recado('Enviando o arquivo. Mantenha esta aba aberta até o fim.', 'espera');
+  progresso(0.01);
+
+  enviarDireto(arquivoEscolhido, senha)
+    .catch(function(erro){
+      if(String(erro.message) === 'rede'){
+        recado('O envio direto não passou. Tentando pelo caminho reserva.', 'espera');
+        return enviarPeloScript(arquivoEscolhido, senha);
+      }
+      throw erro;
+    })
+    .then(function(arquivoId){
+      recado('Arquivo no Drive. Registrando na planilha.', 'espera');
+      return pedir({
+        action: 'registrar',
+        senha: senha,
+        arquivoId: arquivoId,
+        titulo: el('titulo').value.trim(),
+        descricao: el('descricao').value.trim(),
+        marca: el('marca').value,
+        categoria: el('categoria').value,
+        formato: el('formato').value,
+        dataDoVideo: el('dataDoVideo').value,
+        tags: el('tags').value.trim(),
+        enviadoPor: el('enviadoPor').value.trim(),
+        tamanho: arquivoEscolhido.size,
+        tipo: arquivoEscolhido.type
+      });
+    })
+    .then(function(r){
+      if(!r.ok) throw new Error(r.erro || 'Não consegui registrar na planilha.');
+      recado('Vídeo enviado e cadastrado.', 'certo');
+      limparFormulario();
+      carregar();
+      setTimeout(function(){ fechar('modalCadastro'); recado(''); }, 1600);
+    })
+    .catch(function(erro){
+      recado(erro.message || 'Algo deu errado no envio.', 'erro');
+      el('barra').style.display = 'none';
+    })
+    .then(function(){
+      botao.disabled = false;
+      botao.textContent = 'Enviar para o banco';
+    });
+}
+
+function limparFormulario(){
+  arquivoEscolhido = null;
+  el('arquivo').value = '';
+  el('titulo').value = '';
+  el('descricao').value = '';
+  el('tags').value = '';
+  el('zonaTitulo').textContent = 'Clique aqui ou arraste o arquivo';
+  el('zonaAjuda').textContent = 'MP4, MOV, WEBM ou AVI';
+  el('barra').style.display = 'none';
+  el('barraInterna').style.width = '0';
+}
+
+function escolherArquivo(arquivo){
+  if(!arquivo) return;
+  arquivoEscolhido = arquivo;
+  el('zonaTitulo').textContent = arquivo.name;
+  el('zonaAjuda').textContent = tamanhoLegivel(arquivo.size);
+  if(!el('titulo').value.trim()){
+    el('titulo').value = arquivo.name.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ');
+  }
+  recado('');
+}
+
+// ---------- LIGAÇÕES ----------
+
+el('btnAtualizar').addEventListener('click', carregar);
+el('btnAbrirCadastro').addEventListener('click', function(){ abrir('modalCadastro'); });
+el('btnEnviar').addEventListener('click', enviar);
+el('busca').addEventListener('input', desenhar);
+el('filtroMarca').addEventListener('change', desenhar);
+el('filtroCategoria').addEventListener('change', desenhar);
+el('filtroFormato').addEventListener('change', desenhar);
+
+el('zonaArquivo').addEventListener('click', function(){ el('arquivo').click(); });
+el('arquivo').addEventListener('change', function(){ escolherArquivo(this.files[0]); });
+['dragenter','dragover'].forEach(function(evento){
+  el('zonaArquivo').addEventListener(evento, function(e){ e.preventDefault(); this.classList.add('sobre'); });
+});
+['dragleave','drop'].forEach(function(evento){
+  el('zonaArquivo').addEventListener(evento, function(e){ e.preventDefault(); this.classList.remove('sobre'); });
+});
+el('zonaArquivo').addEventListener('drop', function(e){
+  if(e.dataTransfer && e.dataTransfer.files.length) escolherArquivo(e.dataTransfer.files[0]);
+});
+
+var botoesFechar = document.querySelectorAll('[data-fechar]');
+for(var b = 0; b < botoesFechar.length; b++){
+  botoesFechar[b].addEventListener('click', function(){ fechar(this.getAttribute('data-fechar')); });
+}
+var fundos = document.querySelectorAll('.fundo-modal');
+for(var f = 0; f < fundos.length; f++){
+  fundos[f].addEventListener('click', function(e){ if(e.target === this) fechar(this.id); });
+}
+document.addEventListener('keydown', function(e){
+  if(e.key === 'Escape'){ fechar('modalPlayer'); fechar('modalCadastro'); }
+});
+
+el('dataDoVideo').value = new Date().toISOString().substring(0, 10);
+carregar();
+</script>
+</body>
+</html>
