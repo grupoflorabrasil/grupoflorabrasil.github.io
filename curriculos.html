@@ -6,24 +6,24 @@
 <title>Banco de Currículos — RH</title>
 <style>
   :root{
-    --bg: #15141b;
-    --bg-elev: #1c1b24;
-    --bg-elev-2: #24232f;
-    --line: #322f3d;
-    --text: #f1eef7;
-    --text-dim: #9c96ad;
-    --accent: #e0a63c;
-    --accent-dim: #4a3a1e;
-    --good: #5fb787;
-    --warn: #e0a63c;
-    --bad: #d9695f;
+    --bg: #f6f3ea;
+    --bg-elev: #fffdf7;
+    --bg-elev-2: #efebdd;
+    --line: #ddd6c4;
+    --text: #22261f;
+    --text-dim: #6e6b5e;
+    --accent: #2f7d4f;
+    --accent-dim: #dceddf;
+    --good: #2f7d4f;
+    --warn: #c2700a;
+    --bad: #c0392b;
 
-    --c-viveiro: #4a9c5f;
-    --c-viveiro-bg: #1a3320;
-    --c-novociclo: #2f9c76;
-    --c-novociclo-bg: #17332a;
-    --c-lotus: #c26bb0;
-    --c-lotus-bg: #33202e;
+    --c-viveiro: #2f7d4f;
+    --c-viveiro-bg: #ddeee2;
+    --c-novociclo: #c2700a;
+    --c-novociclo-bg: #fbe8ce;
+    --c-lotus: #c0392b;
+    --c-lotus-bg: #fadfd9;
 
     --radius: 12px;
     --font-head: 'Segoe UI', system-ui, sans-serif;
@@ -43,7 +43,7 @@
   /* ---------- LOGIN ---------- */
   #login-screen{
     position:fixed; inset:0; display:flex; align-items:center; justify-content:center;
-    background: radial-gradient(circle at 30% 20%, #211f2b, var(--bg));
+    background: radial-gradient(circle at 30% 20%, #ffffff, var(--bg));
     z-index: 100;
   }
   #login-box{
@@ -59,7 +59,7 @@
   #login-box input:focus{ border-color: var(--accent); }
   #login-box button{
     width:100%; padding:12px; border-radius:8px; border:none; background: var(--accent);
-    color:#241a05; font-weight:600; font-size:14px; cursor:pointer;
+    color:#ffffff; font-weight:600; font-size:14px; cursor:pointer;
   }
   #login-error{ color: var(--bad); font-size:12.5px; margin-top:10px; min-height:16px;}
 
@@ -93,7 +93,7 @@
     color: var(--text); font-size:13.5px; cursor:pointer; font-weight:500;
   }
   .btn:hover{ border-color: var(--accent); }
-  .btn-primary{ background: var(--accent); color:#241a05; border-color: var(--accent); font-weight:600;}
+  .btn-primary{ background: var(--accent); color:#ffffff; border-color: var(--accent); font-weight:600;}
   .btn-primary:hover{ opacity:0.92; }
   .btn-danger{ color: var(--bad); }
 
@@ -121,7 +121,7 @@
   .search-row input{ font-size:14px; padding:12px 14px; }
 
   .curriculo-grid{ display:grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap:14px;}
-  .ccard{ background: var(--bg-elev); border:1px solid var(--line); border-radius: var(--radius); padding:16px;}
+  .ccard{ background: var(--bg-elev); border:1px solid var(--line); border-radius: var(--radius); padding:16px; box-shadow: 0 1px 2px rgba(34,38,31,0.06);}
   .ccard .top{ display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:8px;}
   .ccard h4{ font-size:15px; margin-bottom:2px;}
   .ccard .cargo{ font-size:12px; color: var(--text-dim); }
@@ -136,7 +136,7 @@
 
   /* ---------- MODAL ---------- */
   .modal-overlay{
-    display:none; position:fixed; inset:0; background: rgba(10,9,14,0.7); z-index:50;
+    display:none; position:fixed; inset:0; background: rgba(34,38,31,0.45); z-index:50;
     align-items:center; justify-content:center; padding:20px;
   }
   .modal-overlay.active{ display:flex; }
@@ -174,6 +174,7 @@
 <div id="app">
   <header>
     <h1>Banco de <span>Currículos</span></h1>
+    <a href="index.html" style="color:var(--text-dim); text-decoration:none; font-size:13px; border:1px solid var(--line); padding:8px 14px; border-radius:8px;">← Voltar ao painel</a>
   </header>
 
   <main>
