@@ -210,10 +210,10 @@ body{
     <div class="enter-hint">Clique para acessar →</div>
   </div>
 
-  <div class="client-card" id="card-videos">
+  <div class="client-card" id="card-curriculos">
     <div class="client-label">Área</div>
-    <h2>Banco de Vídeos e Imagens</h2>
-    <div class="client-desc">Vídeos e imagens das três marcas, com busca e envio de novos arquivos.</div>
+    <h2>Banco de Currículos</h2>
+    <div class="client-desc">Candidatos das três marcas, com busca por nome, cargo e contato.</div>
     <div class="enter-hint">Clique para acessar →</div>
   </div>
 </div>
@@ -235,17 +235,17 @@ body{
 const SENHAS = {
   marketing: '1996',
   concurso: '1996',
-  videos: '1996'
+  rh: '1996'
 };
 const DESTINOS = {
   marketing: 'marketing.html',
   concurso: 'concurso.html',
-  videos: 'banco-videos.html'
+  rh: 'curriculos.html'
 };
 const NOMES = {
   marketing: 'Marketing',
   concurso: 'Concurso',
-  videos: 'Banco de Vídeos e Imagens'
+  rh: 'Banco de Currículos'
 };
 
 let clienteAtual = null;
@@ -256,8 +256,8 @@ document.getElementById('card-marketing').addEventListener('click', ()=>{
 document.getElementById('card-concurso').addEventListener('click', ()=>{
   abrirSenha('concurso');
 });
-document.getElementById('card-videos').addEventListener('click', ()=>{
-  abrirSenha('videos');
+document.getElementById('card-curriculos').addEventListener('click', ()=>{
+  abrirSenha('rh');
 });
 
 function abrirSenha(cliente){
